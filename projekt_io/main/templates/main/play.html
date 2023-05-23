@@ -1,0 +1,23 @@
+{% load static %}
+
+<html>
+<script>
+    function updateImage() {
+    var imageElement = document.getElementById('dynamic-image');
+    var newImagePath = "{% static 'main/board.svg' %}";
+
+    var timestamp = new Date().getTime(); // Generate a unique timestamp
+
+    imageElement.src = newImagePath + '?v=' + timestamp;
+}
+
+setInterval(updateImage, 300);
+</script>
+
+<body>
+    <h1>Python Head & Brain</h1>
+    <img id="dynamic-image" src="{% static 'main/board.svg' %}" height=400px width=auto
+        alt="Default Image">
+</body>
+
+</html>
