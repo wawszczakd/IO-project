@@ -66,5 +66,3 @@ class GameHandAndBrain(Game):
     def make_move_hand(self, move):
         self.board.push_san(move)
         self.save()
-
-    
