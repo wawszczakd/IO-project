@@ -42,10 +42,13 @@ class GameHandAndBrain(Game):
 
     current_piece = models.CharField(max_length=10, blank=True, null=True)
 
+    selected_piece = "PAWN"
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if not self.current_move:
             self.current_move = self.team1_brain
+        current_piece = "PAWN"
 
     def get_next_move(self):
         if self.current_move == self.team1_brain:
