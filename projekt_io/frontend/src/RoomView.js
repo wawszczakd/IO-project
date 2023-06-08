@@ -79,33 +79,34 @@ function RoomView({ roomCode, nickname }) {
                     <li key={index}>{user.nickname}</li>
                 ))}
             </ul>
-        <div className="container">
-            {isLobbyVisible && (
-                <div id="join-room-section" className="text-center">
-                    <h2 className="text-center">Room: { roomCode }</h2>
-                    <ul>
-                        {connectedUsers.map((user, index) => (
-                            <li key={index}>{user}</li>
-                        ))}
-                    </ul>
-                    <div className="text-center">
-                        <button
-                            type="button"
-                            className="btn btn-primary mx-3"
-                            id="create-room-btn"
-                            onClick={handleStartGame}
-                        >
-                            Start Game
-                        </button>
+            <div className="container">
+                {isLobbyVisible && (
+                    <div id="join-room-section" className="text-center">
+                        <h2 className="text-center">Room: { roomCode }</h2>
+                        <ul>
+                            {connectedUsers.map((user, index) => (
+                                <li key={index}>{user}</li>
+                            ))}
+                        </ul>
+                        <div className="text-center">
+                            <button
+                                type="button"
+                                className="btn btn-primary mx-3"
+                                id="create-room-btn"
+                                onClick={handleStartGame}
+                            >
+                                Start Game
+                            </button>
+                        </div>
                     </div>
-                </div>
-            )}
+                )}
 
-            {isGameRoomVisible && (
-                <GameRoom
-                    connectedUsers={connectedUsers}
-                />
-            )}
+                {isGameRoomVisible && (
+                    <GameRoom
+                        connectedUsers={connectedUsers}
+                    />
+                )}
+            </div>
         </div>
     );
 }
