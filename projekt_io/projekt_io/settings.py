@@ -127,3 +127,5 @@ CHANNEL_LAYERS = {
         "BACKEND": "channels.layers.InMemoryChannelLayer"
     },
 }
+
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
