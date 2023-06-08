@@ -40,11 +40,6 @@ function GameRoom({ connectedUsers }) {
 
     return (
         <div id="game-room-section" className="text-center">
-            <ul>
-                {connectedUsers.map((user, index) => (
-                    <li key={index}>{user}</li>
-                ))}
-            </ul>
             <div>
                 <Chessboard position={game.fen()} onPieceDrop={onDrop}/>
                 {game.fen()}
