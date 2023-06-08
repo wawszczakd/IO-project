@@ -23,3 +23,9 @@ class Room(models.Model):
             
         super().save(*args, **kwargs)
 
+class User(models.Model):
+    nickname = models.CharField(max_length=256)
+
+    def __str__(self):
+        return self.nickname
+

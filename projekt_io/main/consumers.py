@@ -1,7 +1,8 @@
 from channels.generic.websocket import AsyncWebsocketConsumer
-from .models import Room
+from .models import Room, User
 import json
 from asgiref.sync import sync_to_async
+from .serializers import UserSerializer
 
 class MainMenuConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -49,11 +50,16 @@ class MainMenuConsumer(AsyncWebsocketConsumer):
         await self.send(json.dumps(response))
 
 class RoomConsumer(AsyncWebsocketConsumer):
-    nicknames = []
+    users = {}
+    owner = {}
 
     async def connect(self):
         self.room_code = self.scope['url_route']['kwargs']['room_code']
         self.room_group_name = 'room_%s' % self.room_code
+
+        if (self.owner.get(self.room_group_name, None) == None):
+            self.owner[self.room_group_name] = None
+            self.users[self.room_group_name] = []
 
         await self.channel_layer.group_add(
             self.room_group_name,
@@ -69,10 +75,12 @@ class RoomConsumer(AsyncWebsocketConsumer):
         )
 
     async def broadcast_users(self):
+        serializer = UserSerializer(self.users[self.room_group_name], many=True)
         response = {
             'type': 'send_message',
             'event': 'connected_users',
-            'connected_users': self.nicknames
+            'connected_users': serializer.data,
+            'owner_id': self.owner[self.room_group_name].id if self.owner[self.room_group_name] else -1
         }
 
         await self.channel_layer.group_send(
@@ -81,11 +89,22 @@ class RoomConsumer(AsyncWebsocketConsumer):
         )
 
     async def user_joined(self, nickname):
-        self.nicknames.append(nickname)
+        user = await sync_to_async(User.objects.create)(nickname=nickname)
+        self.users[self.room_group_name].append(user)
+        if (self.owner[self.room_group_name] == None):
+            self.owner[self.room_group_name] = user
         await self.broadcast_users()
 
-    async def user_left(self, nickname):
-        self.nicknames.remove(nickname)
+    async def user_left(self, user_id):
+        user = await sync_to_async(User.objects.get)(pk=user_id)
+        self.users[self.room_group_name].remove(user)
+        if (self.owner[self.room_group_name] == user):
+            if (len(self.users[self.room_group_name]) != 0):
+                self.owner[self.room_group_name] = self.users[self.room_group_name][0]
+            else:
+                self.owner[self.room_group_name] = None
+
+        await sync_to_async(user.delete)()
         await self.broadcast_users()
 
     async def receive(self, text_data):
@@ -95,7 +114,7 @@ class RoomConsumer(AsyncWebsocketConsumer):
         if message_type == 'user_joined':
             await self.user_joined(data['nickname'])
         elif message_type == 'user_left':
-            await self.user_left(data['nickname'])
+            await self.user_left(data['user_id'])
      
     async def send_message(self, res):
         await self.send(text_data=json.dumps({
