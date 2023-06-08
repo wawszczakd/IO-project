@@ -73,19 +73,13 @@ function RoomView({ roomCode, nickname }) {
 
     return (
         <div id="join-room-section" className="text-center">
-            <h2 className="text-center">Room: { roomCode }</h2>
-            <ul>
-                {connectedUsers.map((user, index) => (
-                    <li key={index}>{user.nickname}</li>
-                ))}
-            </ul>
             <div className="container">
                 {isLobbyVisible && (
                     <div id="join-room-section" className="text-center">
                         <h2 className="text-center">Room: { roomCode }</h2>
                         <ul>
                             {connectedUsers.map((user, index) => (
-                                <li key={index}>{user}</li>
+                                <li key={index}>{user.nickname}</li>
                             ))}
                         </ul>
                         <div className="text-center">
