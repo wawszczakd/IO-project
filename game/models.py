@@ -20,7 +20,10 @@ class Game(models.Model):
     current_move = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True, related_name='current_games')
 
-    board = chess.Board()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.board = chess.Board()
+
 
     def get_board(self):
         return self.board
@@ -42,21 +45,18 @@ class GameHandAndBrain(Game):
 
     current_piece = models.CharField(max_length=10, blank=True, null=True)
 
-    selected_piece = "PAWN"
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if not self.current_move:
             self.current_move = self.team1_brain
-        current_piece = "PAWN"
 
     def get_next_move(self):
         if self.current_move == self.team1_brain:
-            return self.team2_hand
+            return self.team1_hand
         elif self.current_move == self.team1_hand:
             return self.team2_brain
         elif self.current_move == self.team2_brain:
-            return self.team1_hand
+            return self.team2_hand
         elif self.current_move == self.team2_hand:
             return self.team1_brain
         else:
@@ -69,5 +69,3 @@ class GameHandAndBrain(Game):
     def make_move_hand(self, move):
         self.board.push_san(move)
         self.save()
-
-
