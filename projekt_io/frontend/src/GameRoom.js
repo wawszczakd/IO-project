@@ -5,6 +5,7 @@ import Chess from 'chess.js';
 
 function GameRoom({ connectedUsers }) {
     const [game, setGame] = useState(new Chess());
+    const [piece, setPiece] = useState(game.PAWN);
 
     function updateGame(modify) {
         setGame((g) => {
@@ -23,7 +24,17 @@ function GameRoom({ connectedUsers }) {
         });
     }
 
+    function randomizePiece() {
+        const possiblePieces = [game.PAWN, game.KNIGHT, game.BISHOP, game.ROOK, game.QUEEN, game.KING];
+        const randomIndex = Math.floor(Math.random() * possiblePieces.length);
+        const newPiece = possiblePieces[randomIndex];
+        setPiece(newPiece);
+        return newPiece;
+    }
+
     function onDrop(sourceSquare, targetSquare) {
+        if(game.get(sourceSquare).type !== piece)
+            return false;
         let move = null;
             updateGame((game) => {
             move = game.move({
@@ -35,6 +46,7 @@ function GameRoom({ connectedUsers }) {
 
         if (move == null) return false;
         setTimeout(makeRandomMove, 200);
+        setPiece(randomizePiece());
         return true;
     }
 
@@ -43,6 +55,18 @@ function GameRoom({ connectedUsers }) {
             <div>
                 <Chessboard position={game.fen()} onPieceDrop={onDrop}/>
                 {game.fen()}
+            </div>
+            <div>
+                {piece}
+            </div>
+            <div>
+                <button
+                    onClick = {() => {
+                        randomizePiece();
+                    }}
+                >
+                reroll piece
+                </button>
             </div>
         </div>
     );
