@@ -1,0 +1,19 @@
+# Django #
+*.pyc
+__pycache__
+db.sqlite3
+
+# Coverage #
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+
+# Virtualenv #
+.env 
+.venv 
+env/ 
+venv/ 
+ENV/
+env.bak/
+venv.bak/
