@@ -52,3 +52,20 @@ class GameHandAndBrainModelsTestCase(TestCase):
         self.assertEqual(self.game.board.fen(),
                               "rnbqkbnr/pppppppp/8/8/"\
                               "4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1")
+
+    def test_make_move_hand2(self):
+        move = "e4"
+        self.game.make_move_hand(move)
+        
+        next_move = self.game.get_next_move()
+        self.assertEqual(next_move, self.user2)
+
+        move = "h6"
+        self.game.make_move_hand(move)
+
+        next_move = self.game.get_next_move()
+        self.assertEqual(next_move, self.user2)
+        
+        self.assertEqual(self.game.board.fen(),
+                              "rnbqkbnr/ppppppp1/7p/8/4P3/"\
+                              "8/PPPP1PPP/RNBQKBNR w KQkq - 0 2")
