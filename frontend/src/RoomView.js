@@ -119,7 +119,7 @@ function RoomView({ roomCode, nickname }) {
                             <ul>
                                 { Object.keys(connectedUsers).map((key, index) => {
                                     return connectedUsers[key].team === 1
-                                    ?   <li key={index}>{connectedUsers[key].nickname + " (" + connectedUsers[key].role + ")"}</li>
+                                    ?   <li key={index}>{connectedUsers[key].nickname + " (" + connectedUsers[key].role + ")" + (ownerId == key ? " (owner)" : "")}</li>
                                     :   null
                                 })}
                             </ul>
@@ -127,7 +127,7 @@ function RoomView({ roomCode, nickname }) {
                             <ul>
                                 { Object.keys(connectedUsers).map((key, index) => {
                                     return connectedUsers[key].team === 2
-                                    ?   <li key={index}>{connectedUsers[key].nickname + " (" + connectedUsers[key].role + ")"}</li>
+                                    ?   <li key={index}>{connectedUsers[key].nickname + " (" + connectedUsers[key].role + ")" + (ownerId == key ? " (owner)" : "")}</li>
                                     :   null
                                 })}
                             </ul>
