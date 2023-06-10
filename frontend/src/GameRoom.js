@@ -33,10 +33,10 @@ function GameRoom({ connectedUsers }) {
     }
 
     function onDrop(sourceSquare, targetSquare) {
-        if(game.get(sourceSquare).type !== piece)
+        if (game.get(sourceSquare).type !== piece)
             return false;
         let move = null;
-            updateGame((game) => {
+        updateGame((game) => {
             move = game.move({
                 from: sourceSquare,
                 to: targetSquare,
@@ -50,10 +50,24 @@ function GameRoom({ connectedUsers }) {
         return true;
     }
 
+    function getGameState(game_id) {
+        const url = "http://localhost:8000/api/gamehandandbrain/4/";
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                // Work with the JSON data
+                console.log(data);
+            })
+            .catch(error => {
+                // Handle any errors
+                console.error('Error:', error);
+            });
+    }
+
     return (
         <div id="game-room-section" className="text-center">
             <div>
-                <Chessboard position={game.fen()} onPieceDrop={onDrop}/>
+                <Chessboard position={game.fen()} onPieceDrop={onDrop} />
                 {game.fen()}
             </div>
             <div>
@@ -61,13 +75,16 @@ function GameRoom({ connectedUsers }) {
             </div>
             <div>
                 <button
-                    onClick = {() => {
+                    onClick={() => {
                         randomizePiece();
                     }}
                 >
-                reroll piece
+                    reroll piece
                 </button>
             </div>
+            <button onClick={getGameState(4)}>
+                    game_state
+            </button>
         </div>
     );
 }
