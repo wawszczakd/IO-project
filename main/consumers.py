@@ -103,10 +103,10 @@ class RoomConsumer(AsyncWebsocketConsumer):
         user = await sync_to_async(User.objects.get)(pk=user_id)
         self.users[self.room_group_name].pop(user.id)
         if (self.owner[self.room_group_name] == user):
-            if (len(self.users[self.room_group_name]) != 0):
-                self.owner[self.room_group_name] = self.users[self.room_group_name][0]
-            else:
-                self.owner[self.room_group_name] = None
+            self.owner[self.room_group_name] = None
+            for user_id in self.users[self.room_group_name].keys():
+                self.owner[self.room_group_name] = await sync_to_async(User.objects.get)(pk=user_id)
+                break
 
         await sync_to_async(user.delete)()
         await self.broadcast_users()
