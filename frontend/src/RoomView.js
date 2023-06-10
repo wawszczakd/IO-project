@@ -85,11 +85,19 @@ function RoomView({ roomCode, nickname }) {
                         <div className="text-center">
                             <button
                                 type="button"
-                                className="btn btn-primary mx-3"
+                                className="btn btn-success mx-3"
                                 id="create-room-btn"
                                 onClick={handleStartGame}
                             >
                                 Start Game
+                            </button>
+                            <button
+                                type="button"
+                                className="btn btn-danger mx-3"
+                                id="create-room-btn"
+                                onClick={handleStartGame}
+                            >
+                                Leave Room
                             </button>
                         </div>
                     </div>
