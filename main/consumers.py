@@ -57,9 +57,9 @@ class RoomConsumer(AsyncWebsocketConsumer):
         self.room_code = self.scope['url_route']['kwargs']['room_code']
         self.room_group_name = 'room_%s' % self.room_code
 
-        if (self.owner.get(self.room_group_name, None) == None):
+        if (self.users.get(self.room_group_name, None) == None):
             self.owner[self.room_group_name] = None
-            self.users[self.room_group_name] = []
+            self.users[self.room_group_name] = {}
 
         await self.channel_layer.group_add(
             self.room_group_name,
@@ -74,13 +74,13 @@ class RoomConsumer(AsyncWebsocketConsumer):
             self.channel_name
         )
 
-    async def broadcast_users(self):
-        serializer = UserSerializer(self.users[self.room_group_name], many=True)
+    async def broadcast_users(self, new_id=-1):
         response = {
             'type': 'send_message',
             'event': 'connected_users',
-            'connected_users': serializer.data,
-            'owner_id': self.owner[self.room_group_name].id if self.owner[self.room_group_name] else -1
+            'connected_users': self.users[self.room_group_name],
+            'owner_id': self.owner[self.room_group_name].id if self.owner[self.room_group_name] else -1,
+            'new_id': new_id
         }
 
         await self.channel_layer.group_send(
@@ -90,14 +90,18 @@ class RoomConsumer(AsyncWebsocketConsumer):
 
     async def user_joined(self, nickname):
         user = await sync_to_async(User.objects.create)(nickname=nickname)
-        self.users[self.room_group_name].append(user)
+        self.users[self.room_group_name][user.id] = {
+            'nickname': nickname,
+            'team': 1,
+            'role': 'hand',
+        }
         if (self.owner[self.room_group_name] == None):
             self.owner[self.room_group_name] = user
-        await self.broadcast_users()
+        await self.broadcast_users(new_id=user.id)
 
     async def user_left(self, user_id):
         user = await sync_to_async(User.objects.get)(pk=user_id)
-        self.users[self.room_group_name].remove(user)
+        self.users[self.room_group_name].pop(user.id)
         if (self.owner[self.room_group_name] == user):
             if (len(self.users[self.room_group_name]) != 0):
                 self.owner[self.room_group_name] = self.users[self.room_group_name][0]
@@ -105,6 +109,14 @@ class RoomConsumer(AsyncWebsocketConsumer):
                 self.owner[self.room_group_name] = None
 
         await sync_to_async(user.delete)()
+        await self.broadcast_users()
+
+    async def team_changed(self, user_id, new_team):
+        self.users[self.room_group_name][user_id]['team'] = new_team
+        await self.broadcast_users()
+
+    async def role_changed(self, user_id, new_role):
+        self.users[self.room_group_name][user_id]['role'] = new_role
         await self.broadcast_users()
 
     async def receive(self, text_data):
@@ -115,6 +127,10 @@ class RoomConsumer(AsyncWebsocketConsumer):
             await self.user_joined(data['nickname'])
         elif message_type == 'user_left':
             await self.user_left(data['user_id'])
+        elif message_type == 'team_changed':
+            await self.team_changed(data['user_id'], data['new_team'])
+        elif message_type == 'role_changed':
+            await self.role_changed(data['user_id'], data['new_role'])
      
     async def send_message(self, res):
         await self.send(text_data=json.dumps({
