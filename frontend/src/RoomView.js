@@ -95,7 +95,7 @@ function RoomView({ roomCode, nickname }) {
                                 type="button"
                                 className="btn btn-danger mx-3"
                                 id="create-room-btn"
-                                onClick={handleStartGame}
+                                onClick={() => window.location.reload(false)}
                             >
                                 Leave Room
                             </button>
