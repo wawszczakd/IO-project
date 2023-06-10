@@ -60,6 +60,6 @@ class GameHandAndBrainSerializerHandMove:
         self.possible_moves = self.get_possible_moves(game_hand_brain)
 
     def get_possible_moves(self, game_hand_brain):
-        return get_moves(game_hand_brain.board, game_hand_brain.selected_piece)
+        return get_moves(game_hand_brain.board, game_hand_brain.current_piece)
 
 

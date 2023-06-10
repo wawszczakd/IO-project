@@ -20,9 +20,12 @@ class Game(models.Model):
     current_move = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True, related_name='current_games')
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.board = chess.Board()
+    board = chess.Board()
+
+    def save(self, *args, **kwargs):
+        if not self.id:  # Only initialize the board if it's a new instance
+            self.board = chess.Board()
+        super().save(*args, **kwargs)
 
 
     def get_board(self):

@@ -33,7 +33,6 @@ def game_hand_brain_send_brain(request, game_id):
 def game_hand_brain_send_hand(request, game_id):
     try:
         game_hand_brain = GameHandAndBrain.objects.get(pk=game_id)
-        request 
         serializer = GameHandAndBrainSerializerHandMove(game_hand_brain)
         return JsonResponse(serializer.__dict__)
     except GameHandAndBrain.DoesNotExist:
@@ -61,6 +60,7 @@ def game_hand_and_brain_make_move(request, game_id):
             data = json.loads(request.body)
             move = data.get('move')
             game.make_move_hand(move)
+            game.save()
             return JsonResponse({'success': 'Move made successfully'})
         except GameHandAndBrain.DoesNotExist:
             return JsonResponse({'error': 'GameHandAndBrain not found'}, status=404)
