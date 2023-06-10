@@ -39,6 +39,20 @@ def game_hand_brain_send_hand(request, game_id):
         return JsonResponse({'error': 'GameHandAndBrain not found'}, status=404)
 
 @csrf_exempt
+def get_game_id(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            user_id = data.get('user_id')
+            user = User.objects.get(pk=user_id)
+            games = user.games.all()
+            return JsonResponse({'games' : list(games.values_list('id', flat=True))})
+        except GameHandAndBrain.DoesNotExist:
+            return JsonResponse({'error': 'User not found'}, status=404)
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+@csrf_exempt
 def game_hand_and_brain_choose_figure(request, game_id):
     if request.method == 'POST':
         try:
