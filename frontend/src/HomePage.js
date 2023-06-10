@@ -115,7 +115,7 @@ function HomePage() {
                             <div className="text-center">
                                 <button
                                     type="button"
-                                    className="btn btn-secondary mx-3"
+                                    className="btn btn-success mx-3"
                                     id="create-room-btn"
                                     onClick={handleCreateRoom}
                                 >
@@ -123,7 +123,7 @@ function HomePage() {
                                 </button>
                                 <button
                                     type="button"
-                                    className="btn btn-secondary mx-3"
+                                    className="btn btn-success mx-3"
                                     id="join-room-btn"
                                     onClick={handleJoinRoom}
                                 >
