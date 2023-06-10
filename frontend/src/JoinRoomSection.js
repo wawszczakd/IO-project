@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 function JoinRoomSection({ onSubmit, roomCode, onChangeRoomCode }) {
     return (
@@ -16,7 +16,7 @@ function JoinRoomSection({ onSubmit, roomCode, onChangeRoomCode }) {
                         onChange={onChangeRoomCode}
                     />
                 </div>
-                <button type="submit" className="btn btn-primary mx-3">
+                <button type="submit" className="btn btn-secondary mx-3">
                     Join
                 </button>
             </form>
