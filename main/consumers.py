@@ -88,6 +88,17 @@ class RoomConsumer(AsyncWebsocketConsumer):
             response
         )
 
+    async def start_game(self):
+        response = {
+            'type': 'send_message',
+            'event': 'start_game'
+        }
+
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            response
+        )
+
     async def user_joined(self, nickname):
         user = await sync_to_async(User.objects.create)(nickname=nickname)
         self.users[self.room_group_name][user.id] = {
@@ -131,6 +142,8 @@ class RoomConsumer(AsyncWebsocketConsumer):
             await self.team_changed(data['user_id'], data['new_team'])
         elif message_type == 'role_changed':
             await self.role_changed(data['user_id'], data['new_role'])
+        elif message_type == 'start_game':
+            await self.start_game()
      
     async def send_message(self, res):
         await self.send(text_data=json.dumps({
