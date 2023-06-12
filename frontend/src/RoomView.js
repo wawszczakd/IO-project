@@ -51,6 +51,14 @@ function RoomView({ roomCode, nickname }) {
             console.log("Disconnected from socket");
         };
 
+        const handleStartGame = () => {
+            const message = {
+                type: 'start_game',
+                user_id: userId,
+            };
+            socket.send(JSON.stringify(message));
+        }
+
         const handleBeforeunload = () => {
             if (userId != null) {
                 const message = {
@@ -71,6 +79,9 @@ function RoomView({ roomCode, nickname }) {
                         setUserId(data.new_id);
 
                     break;
+                case 'start_game':
+                    setGameRoomVisible(true);
+                    setLobbyVisible(false);
                 default:
                     break;
             }
@@ -80,7 +91,9 @@ function RoomView({ roomCode, nickname }) {
         const join_team_2_btn = document.getElementById("join-team-2-btn");
         const switch_to_hand_btn = document.getElementById("switch-to-hand-btn");
         const switch_to_brain_btn = document.getElementById("switch-to-brain-btn");
+        const start_game_btn = document.getElementById("start-game-btn");
 
+        start_game_btn.addEventListener('click',        handleStartGame);
         join_team_1_btn.addEventListener('click',       handleChangeTeam1);
         join_team_2_btn.addEventListener('click',       handleChangeTeam2);
         switch_to_hand_btn.addEventListener('click',    handleSwitchToHand);
@@ -91,6 +104,7 @@ function RoomView({ roomCode, nickname }) {
         socket.addEventListener('message',              handleMessage);
 
         return () => {
+            start_game_btn.removeEventListener('click',         handleStartGame);
             join_team_1_btn.removeEventListener('click',        handleChangeTeam1);
             join_team_2_btn.removeEventListener('click',        handleChangeTeam2);
             switch_to_hand_btn.removeEventListener('click',     handleSwitchToHand);
@@ -103,10 +117,10 @@ function RoomView({ roomCode, nickname }) {
         }
     }, [nickname, roomCode, userId]);
 
-    const handleStartGame = () => {
-        setGameRoomVisible(true);
-        setLobbyVisible(false);
-    };
+    // const handleStartGame = () => {
+    //     setGameRoomVisible(true);
+    //     setLobbyVisible(false);
+    // };
 
     return (
         <div id="join-room-section" className="text-center">
@@ -136,8 +150,7 @@ function RoomView({ roomCode, nickname }) {
                             <button
                                 type="button"
                                 className="btn btn-success mx-3"
-                                id="create-room-btn"
-                                onClick={handleStartGame}
+                                id="start-game-btn"
                             >
                                 Start Game
                             </button>
