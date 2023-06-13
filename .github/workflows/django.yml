@@ -41,4 +41,5 @@ jobs:
         pip install -r requirements.txt
     - name: Run Tests
       run: |
+        . .pre_commit_venv/bin/activate
         python manage.py test
