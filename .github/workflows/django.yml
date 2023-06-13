@@ -30,7 +30,7 @@ jobs:
       with:
         path: |
           .pre_commit_venv
-        key: ${{ env.cache-name }}-${{ hashFiles('requirements.txt') }}
+        key: ${{ env.cache-name }}-${{ hashFiles('requirements.txt') }}-${{ matrix.python-version }}
 
     - name: Install Dependencies
       if: steps.cache_pre_commit.outputs.cache-hit != 'true'
