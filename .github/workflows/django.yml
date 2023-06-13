@@ -21,10 +21,25 @@ jobs:
       uses: actions/setup-python@v3
       with:
         python-version: ${{ matrix.python-version }}
+    
+    - name: cache for requirements 
+      id: cache_pre_commit
+      uses: actions/cache@v3
+      env:
+          cache-name: cache-pre-commit
+      with:
+        path: |
+          .pre_commit_venv
+        key: ${{ env.cache-name }}-${{ hashFiles('requirements.txt') }}-${{ matrix.python-version }}
+
     - name: Install Dependencies
+      if: steps.cache_pre_commit.outputs.cache-hit != 'true'
       run: |
+        python -m venv .pre_commit_venv
+        . .pre_commit_venv/bin/activate
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     - name: Run Tests
       run: |
+        . .pre_commit_venv/bin/activate
         python manage.py test
