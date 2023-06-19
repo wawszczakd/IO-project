@@ -1,11 +1,15 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Chessboard } from 'react-chessboard';
 
 import Chess from 'chess.js';
 
-function GameRoom({ connectedUsers }) {
+function GameRoom({ roomCode, connectedUsers, userId }) {
     const [game, setGame] = useState(new Chess());
     const [piece, setPiece] = useState(game.PAWN);
+
+    // [TODO]: zainicjalizowanie na startowy state 
+    // (zaczyna user white brain, szachownica jest pusta, etc)
+    const [gameState, setGameState] = useState(null);
 
     function updateGame(modify) {
         setGame((g) => {
@@ -50,6 +54,10 @@ function GameRoom({ connectedUsers }) {
         return true;
     }
 
+    // [TODO] czy na pewno fetch? Raczej chcemy używać websocketów, które
+    // odsyłają stan wszystkim, dla synchronizacji
+    // + coś jest nie tak w routingu i nie czyta i tak api
+    // na razie zakomentowałem button
     function getGameState(game_id) {
         const url = "http://localhost:8000/api/gamehandandbrain/4/";
         fetch(url)
@@ -63,6 +71,62 @@ function GameRoom({ connectedUsers }) {
                 console.error('Error:', error);
             });
     }
+
+    useEffect(() => {
+        const socket = new WebSocket(`ws://localhost:8000/ws/hand_and_brain/${roomCode}/`);
+        const handleChooseFigure = (figure) => {
+            console.log(figure);
+            const message = {
+                type: 'brain_choose_figure',
+                figure: figure,
+            }
+            socket.send(JSON.stringify(message));
+        }
+
+        const handleMessage = (event) => {
+            const data = JSON.parse(event.data).payload;
+            switch (data.event) {
+                default:
+                    console.log(data);
+                    break;
+            }
+        }
+
+        const handleChooseP = () => { return handleChooseFigure('p'); }
+        const handleChooseN = () => { return handleChooseFigure('n'); }
+        const handleChooseR = () => { return handleChooseFigure('r'); }
+        const handleChooseB = () => { return handleChooseFigure('b'); }
+        const handleChooseK = () => { return handleChooseFigure('k'); }
+        const handleChooseQ = () => { return handleChooseFigure('q'); }
+
+        const brain_choose_p = document.getElementById('brain-choose-p');
+        const brain_choose_n = document.getElementById('brain-choose-n');
+        const brain_choose_r = document.getElementById('brain-choose-r');
+        const brain_choose_b = document.getElementById('brain-choose-b');
+        const brain_choose_k = document.getElementById('brain-choose-k');
+        const brain_choose_q = document.getElementById('brain-choose-q');
+
+        brain_choose_p.addEventListener('click', handleChooseP);
+        brain_choose_n.addEventListener('click', handleChooseN);
+        brain_choose_r.addEventListener('click', handleChooseR);
+        brain_choose_b.addEventListener('click', handleChooseB);
+        brain_choose_k.addEventListener('click', handleChooseK);
+        brain_choose_q.addEventListener('click', handleChooseQ);
+
+        socket.addEventListener('message', handleMessage);
+
+        return () => {
+            brain_choose_p.removeEventListener('click', handleChooseP);
+            brain_choose_n.removeEventListener('click', handleChooseN);
+            brain_choose_r.removeEventListener('click', handleChooseR);
+            brain_choose_b.removeEventListener('click', handleChooseB);
+            brain_choose_k.removeEventListener('click', handleChooseK);
+            brain_choose_q.removeEventListener('click', handleChooseQ);
+
+            socket.removeEventListener('message', handleMessage);
+        }
+
+    }, [roomCode, userId]);
 
     return (
         <div id="game-room-section" className="text-center">
@@ -82,9 +146,18 @@ function GameRoom({ connectedUsers }) {
                     reroll piece
                 </button>
             </div>
-            <button onClick={getGameState(4)}>
+            {/* <button onClick={getGameState(4)}>
                     game_state
-            </button>
+            </button> */}
+            <div className="container">
+                Choose a figure:
+                <button className="btn btn-secondary" id="brain-choose-p">Pawn</button>
+                <button className="btn btn-secondary" id="brain-choose-n">Knignt</button>
+                <button className="btn btn-secondary" id="brain-choose-r">Rook</button>
+                <button className="btn btn-secondary" id="brain-choose-b">Bishop</button>
+                <button className="btn btn-secondary" id="brain-choose-k">King</button>
+                <button className="btn btn-secondary" id="brain-choose-q">Queen</button>
+            </div>
         </div>
     );
 }

@@ -136,3 +136,47 @@ class RoomConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps({
             "payload": res,
         }))
+
+# tutaj można stworzyć ogólnego gameConsumer zintegrowanego z modelem Game i extendować
+class HandAndBrainConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        self.room_code = self.scope['url_route']['kwargs']['room_code']
+        self.room_group_name = 'room_%s' % self.room_code
+
+        await self.channel_layer.group_add(
+            self.room_group_name,
+            self.channel_name
+        )
+
+        await self.accept()
+
+    async def disconnect(self, close_code):
+        await self.channel_layer.group_discard(
+            self.room_group_name,
+            self.channel_name
+        )
+
+    # dostaliśmy wiadomość od reacta, że brain wybrał figure
+    # [TODO] implement, powinno odsyłać nowy stan gry przez group_send jak w roomConsumer
+    # pytanie co dokładnie będzie w stanie (możliwe ruchy, kto teraz się rusza, czy koniec gry...)
+    async def brain_choose_figure(self, figure):
+        print(figure)
+
+    # [TODO] implement, analogicznie jak wyżej
+    async def hand_choose_move(self, move):
+        print(move)
+
+
+    async def receive(self, text_data):
+        data = json.loads(text_data)
+        message_type = data['type']
+
+        if message_type == 'brain_choose_figure':
+            await self.brain_choose_figure(data['figure'])
+        elif message_type == 'hand_choose_move':
+            await self.hand_choose_move(data['move'])
+        
+    async def send_message(self, res):
+        await self.send(text_data=json.dumps({
+            "payload": res,
+        }))
