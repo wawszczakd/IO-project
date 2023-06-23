@@ -102,26 +102,26 @@ function RoomView({ roomCode, nickname }) {
         const switch_to_brain_btn = document.getElementById("switch-to-brain-btn");
         const start_game_btn = document.getElementById("start-game-btn");
 
-        start_game_btn.addEventListener('click',        handleStartGame);
-        join_team_1_btn.addEventListener('click',       handleChangeTeam1);
-        join_team_2_btn.addEventListener('click',       handleChangeTeam2);
-        switch_to_hand_btn.addEventListener('click',    handleSwitchToHand);
-        switch_to_brain_btn.addEventListener('click',   handleSwitchToBrain);
-        window.addEventListener('beforeunload',         handleBeforeunload);
-        socket.addEventListener('open',                 handleOpen);
-        socket.addEventListener('close',                handleClose);
-        socket.addEventListener('message',              handleMessage);
+        start_game_btn.addEventListener('click', handleStartGame);
+        join_team_1_btn.addEventListener('click', handleChangeTeam1);
+        join_team_2_btn.addEventListener('click', handleChangeTeam2);
+        switch_to_hand_btn.addEventListener('click', handleSwitchToHand);
+        switch_to_brain_btn.addEventListener('click', handleSwitchToBrain);
+        window.addEventListener('beforeunload', handleBeforeunload);
+        socket.addEventListener('open', handleOpen);
+        socket.addEventListener('close', handleClose);
+        socket.addEventListener('message', handleMessage);
 
         return () => {
-            start_game_btn.removeEventListener('click',         handleStartGame);
-            join_team_1_btn.removeEventListener('click',        handleChangeTeam1);
-            join_team_2_btn.removeEventListener('click',        handleChangeTeam2);
-            switch_to_hand_btn.removeEventListener('click',     handleSwitchToHand);
-            switch_to_brain_btn.removeEventListener('click',    handleSwitchToBrain);
-            window.removeEventListener('beforeunload',          handleBeforeunload);
-            socket.removeEventListener('open',                  handleOpen);
-            socket.removeEventListener('close',                 handleClose);
-            socket.removeEventListener('message',               handleMessage);
+            start_game_btn.removeEventListener('click', handleStartGame);
+            join_team_1_btn.removeEventListener('click', handleChangeTeam1);
+            join_team_2_btn.removeEventListener('click', handleChangeTeam2);
+            switch_to_hand_btn.removeEventListener('click', handleSwitchToHand);
+            switch_to_brain_btn.removeEventListener('click', handleSwitchToBrain);
+            window.removeEventListener('beforeunload', handleBeforeunload);
+            socket.removeEventListener('open', handleOpen);
+            socket.removeEventListener('close', handleClose);
+            socket.removeEventListener('message', handleMessage);
             socket.close();
         }
     }, [nickname, roomCode, userId]);
@@ -136,22 +136,22 @@ function RoomView({ roomCode, nickname }) {
             <div className="container">
                 {isLobbyVisible && (
                     <div id="join-room-section" className="text-center">
-                        <h2 className="text-center">Room: { roomCode }</h2>
+                        <h2 className="text-center">Room: {roomCode}</h2>
                         <div className="row">
                             <div className="col-sm-6">Team 1</div>
                             <ul>
-                                { Object.keys(connectedUsers).map((key, index) => {
+                                {Object.keys(connectedUsers).map((key, index) => {
                                     return connectedUsers[key].team === 1
-                                    ?   <li key={index}>{connectedUsers[key].nickname + " (" + connectedUsers[key].role + ")" + (ownerId == key ? " (owner)" : "")}</li>
-                                    :   null
+                                        ? <li key={index}>{connectedUsers[key].nickname + " (" + connectedUsers[key].role + ")" + (ownerId == key ? " (owner)" : "")}</li>
+                                        : null
                                 })}
                             </ul>
                             <div className="col-sm-6">Team 2</div>
                             <ul>
-                                { Object.keys(connectedUsers).map((key, index) => {
+                                {Object.keys(connectedUsers).map((key, index) => {
                                     return connectedUsers[key].team === 2
-                                    ?   <li key={index}>{connectedUsers[key].nickname + " (" + connectedUsers[key].role + ")" + (ownerId == key ? " (owner)" : "")}</li>
-                                    :   null
+                                        ? <li key={index}>{connectedUsers[key].nickname + " (" + connectedUsers[key].role + ")" + (ownerId == key ? " (owner)" : "")}</li>
+                                        : null
                                 })}
                             </ul>
                         </div>
@@ -210,7 +210,8 @@ function RoomView({ roomCode, nickname }) {
                         connectedUsers={connectedUsers}
                         roomCode={roomCode}
                         userId={userId}
-                        initUser={roles['brain_1']}
+                        myRole={userId == roles['brain_1'] ? 0 : userId == roles['hand_1']
+                                ? 1 : userId == roles['brain_2'] ? 2 : 3}
                     />
                 )}
             </div>

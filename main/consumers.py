@@ -130,7 +130,7 @@ class RoomConsumer(AsyncWebsocketConsumer):
     async def start_game(self, user_id):
         # check if the game can be started
         valid = self.check_if_valid()
-        print(valid)
+        
         if valid != "OK":
             response = {
                 'type'    : 'send_message',

@@ -3,14 +3,16 @@ import { Chessboard } from 'react-chessboard';
 
 import Chess from 'chess.js';
 
-function GameRoom({ roomCode, connectedUsers, initUser, userId }) {
+function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
     console.log(roomCode);
     console.log(connectedUsers);
-    console.log(userId);
-    console.log(initUser);
-    const [currentUser, setCurrentUser] = useState(initUser);
+    //console.log(userId);
+    //console.log(initUser);
+    const [currentRole, setCurrentRole] = useState(0);
     const [game, setGame] = useState(new Chess());
     const [piece, setPiece] = useState(game.PAWN);
+    
+    console.log(myRole);
 
     // [TODO]: zainicjalizowanie na startowy state 
     // (zaczyna user white brain, szachownica jest pusta, etc)
@@ -162,7 +164,7 @@ function GameRoom({ roomCode, connectedUsers, initUser, userId }) {
             </button> */}
             
             <div className="container">
-                {(currentUser == userId) ? (<p>your turn</p>) : (<p>wait for your turn</p>)}
+                {(currentRole == myRole) ? (<p>your turn</p>) : (<p>wait for your turn</p>)}
                 Choose a figure:
                 <button className="btn btn-secondary" id="brain-choose-p">Pawn</button>
                 <button className="btn btn-secondary" id="brain-choose-n">Knignt</button>
