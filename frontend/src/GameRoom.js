@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Chessboard } from 'react-chessboard';
 
 import Chess from 'chess.js';
@@ -46,19 +46,34 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
             }
             socket.send(JSON.stringify(message));
         }
+        
+        const handleMakeMove = () => {
+            const message = {
+                type         : 'hand_choose_move',
+                fen          : game.fen(),
+                current_role : currentRole,
+            }
+            console.log(message);
+            socket.send(JSON.stringify(message));
+            console.log("handleMakeMove done");
+        }
 
         const handleMessage = (event) => {
             const data = JSON.parse(event.data).payload;
             console.log(data);
             switch (data.event) {
                 case "brain_choose_figure":
+                    console.log("case brain_choose_figure");
                     setCurrentRole(data.current_role);
+                    console.log("new currentRole: " + currentRole);
                     console.log(data);
                     console.log(data.current_role + " " + currentRole);
                     setLegalMoves(data.moves);
                     break;
                 case "hand_choose_move":
+                    console.log("case hand_choose_move");
                     setCurrentRole(data.current_role);
+                    console.log("new currentRole: " + currentRole);
                     console.log(data);
                     setLegalFigures(data.figures);
                     break;
@@ -66,7 +81,10 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
                     console.log("unknown event");
             }
         }
-
+        
+        const hand_move = document.getElementById('hand-move');
+        if (hand_move != null) hand_move.addEventListener('click', handleMakeMove);
+        
         const handleChooseP = () => { return handleChooseFigure('p'); }
         const handleChooseN = () => { return handleChooseFigure('n'); }
         const handleChooseR = () => { return handleChooseFigure('r'); }
@@ -132,8 +150,13 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
         return true;
     }
     
+    const buttonRef = useRef(null);
+    
     return (
         <div id="game-room-section" className="text-center">
+            <div>
+                <button ref={buttonRef} id="hand-move">Hand move</button>
+            </div>
             <div>
                 <Chessboard position={game.fen()} onPieceDrop={onDrop} />
                 {game.fen()}
