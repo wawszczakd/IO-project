@@ -130,8 +130,6 @@ class RoomConsumer(AsyncWebsocketConsumer):
     async def start_game(self, user_id):
         # check if the game can be started
         valid = self.check_if_valid()
-        
-        valid = "OK"
 
         if valid != "OK":
             response = {
@@ -272,7 +270,7 @@ class HandAndBrainConsumer(AsyncWebsocketConsumer):
             "fen"     : new_fen,
             "current_role" : (current_role+1)%4,
         }
-        
+
         await self.channel_layer.group_send(
             self.room_group_name,
             response

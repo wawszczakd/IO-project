@@ -86,7 +86,7 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
                 case "hand_choose_move":
                     setCurrentRole(data.current_role);
                     console.log(data);
-                    legalFigures = data.figures;
+                    setLegalFigures(data.legalFigures);
                     break;
                 default:
                     console.log("unknown event");
@@ -152,7 +152,7 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
             </button> */}
             
             <div className="container">
-                {currentRole === myRole && myRole % 2 === 0 ? <p>Your turn</p> : <p>Wait for your turn</p>}
+                {currentRole === myRole ? <p>Your turn</p> : <p>Wait for your turn</p>}
                 {myRole % 2 === 0 && currentRole === myRole && (
                     <>
                     <p>Choose a figure:</p>
