@@ -15,6 +15,7 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
     const [legalMoves, setLegalMoves] = useState([]);
     console.log(myRole);
 
+    const [isMoveMade, setIsMoveMade] = useState(false);
     // [TODO]: zainicjalizowanie na startowy state 
     // (zaczyna user white brain, szachownica jest pusta, etc)
     const [gameState, setGameState] = useState(null);
@@ -22,6 +23,19 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
     useEffect(() => {
         const socket = new WebSocket(`ws://localhost:8000/ws/hand_and_brain/${roomCode}/`);
         
+        socket.addEventListener('open', () => {
+            if (isMoveMade) {
+              const message = {
+                type: 'hand_choose_move',
+                fen: game.fen(),
+                current_role: currentRole,
+              };
+              console.log("Sending message:", message);
+              socket.send(JSON.stringify(message));
+              setIsMoveMade(false);
+            }
+        });
+
         const handleChooseFigure = (figure) => {
             console.log(figure);
             const message = {
@@ -32,16 +46,6 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
             }
             socket.send(JSON.stringify(message));
         }
-        
-        const handleMakeMove = () => {
-            const message = {
-                type         : 'hand_choose_move',
-                fen          : game.fen(),
-                current_role : currentRole,
-            }
-            console.log(message);
-            socket.send(JSON.stringify(message));
-        }
 
         const handleMessage = (event) => {
             const data = JSON.parse(event.data).payload;
@@ -50,12 +54,13 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
                 case "brain_choose_figure":
                     setCurrentRole(data.current_role);
                     console.log(data);
+                    console.log(data.current_role + " " + currentRole);
                     setLegalMoves(data.moves);
                     break;
                 case "hand_choose_move":
                     setCurrentRole(data.current_role);
                     console.log(data);
-                    setLegalFigures(data.legalFigures);
+                    setLegalFigures(data.figures);
                     break;
                 default:
                     console.log("unknown event");
@@ -96,7 +101,7 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
             socket.removeEventListener('message', handleMessage);
         }
 
-    }, [roomCode, userId]);
+    }, [roomCode, userId, isMoveMade, game, myRole]);
 
     function updateGame(modify) {
         setGame((g) => {
@@ -122,7 +127,8 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
         });
 
         if (move === null) return false;
-        //TODO handleMakeMove
+        //console.log(currentRole);
+        setIsMoveMade(true);
         return true;
     }
     
