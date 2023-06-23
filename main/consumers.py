@@ -259,13 +259,13 @@ class HandAndBrainConsumer(AsyncWebsocketConsumer):
     # [TODO] implement, analogicznie jak wyżej
     async def hand_choose_move(self, fen, current_role):
         board = chess.Board(fen)
-        figures = get_figures(new_fen)
+        figures = get_figures(fen)
 
         response = {
             'type'  : 'send_message',
             "event"   : "hand_choose_move",
             "figures" : figures,
-            "fen"     : new_fen,
+            "fen"     : fen,
             "current_role" : (current_role+1)%4,
         }
 

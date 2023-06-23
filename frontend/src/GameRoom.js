@@ -13,7 +13,6 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
     const [piece, setPiece] = useState(game.PAWN);
     const [legalFigures, setLegalFigures] = useState(['p', 'n']);
     const [legalMoves, setLegalMoves] = useState([]);
-    
     console.log(myRole);
 
     // [TODO]: zainicjalizowanie na startowy state 
@@ -87,18 +86,18 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
         socket.addEventListener('message', handleMessage);
 
         return () => {
-            brain_choose_p.removeEventListener('click', handleChooseP);
-            brain_choose_n.removeEventListener('click', handleChooseN);
-            brain_choose_r.removeEventListener('click', handleChooseR);
-            brain_choose_b.removeEventListener('click', handleChooseB);
-            brain_choose_k.removeEventListener('click', handleChooseK);
-            brain_choose_q.removeEventListener('click', handleChooseQ);
+            if (brain_choose_p != null) brain_choose_p.removeEventListener('click', handleChooseP);
+            if (brain_choose_n != null) brain_choose_n.removeEventListener('click', handleChooseN);
+            if (brain_choose_r != null) brain_choose_r.removeEventListener('click', handleChooseR);
+            if (brain_choose_b != null) brain_choose_b.removeEventListener('click', handleChooseB);
+            if (brain_choose_k != null) brain_choose_k.removeEventListener('click', handleChooseK);
+            if (brain_choose_q != null) brain_choose_q.removeEventListener('click', handleChooseQ);
 
             socket.removeEventListener('message', handleMessage);
         }
 
     }, [roomCode, userId]);
-    
+
     function updateGame(modify) {
         setGame((g) => {
             const update = { ...g };
@@ -123,7 +122,7 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
         });
 
         if (move === null) return false;
-        handleMakeMove();
+        //TODO handleMakeMove
         return true;
     }
     
