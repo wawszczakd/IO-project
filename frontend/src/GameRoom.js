@@ -62,24 +62,6 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
         return true;
     }
 
-    // [TODO] czy na pewno fetch? Raczej chcemy używać websocketów, które
-    // odsyłają stan wszystkim, dla synchronizacji
-    // + coś jest nie tak w routingu i nie czyta i tak api
-    // na razie zakomentowałem button
-    function getGameState(game_id) {
-        const url = "http://localhost:8000/api/gamehandandbrain/4/";
-        fetch(url)
-            .then(response => response.json())
-            .then(data => {
-                // Work with the JSON data
-                console.log(data);
-            })
-            .catch(error => {
-                // Handle any errors
-                console.error('Error:', error);
-            });
-    }
-
     useEffect(() => {
         const socket = new WebSocket(`ws://localhost:8000/ws/hand_and_brain/${roomCode}/`);
         const handleChooseFigure = (figure) => {
@@ -88,17 +70,21 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
                 type: 'brain_choose_figure',
                 figure: figure,
                 fen: game.fen(),
+                current_role: currentRole,
             }
             socket.send(JSON.stringify(message));
         }
 
         const handleMessage = (event) => {
-            const data = JSON.parse(event.data);
+            const data = JSON.parse(event.data).payload;
+            console.log(data);
             switch (data.event) {
                 case "brain_choose_figure":
+                    setCurrentRole(data.current_role);
                     console.log(data);
                     break;
                 case "hand_choose_move":
+                    setCurrentRole(data.current_role);
                     console.log(data);
                     legalFigures = data.figures;
                     break;
