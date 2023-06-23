@@ -11,6 +11,7 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
     const [currentRole, setCurrentRole] = useState(0);
     const [game, setGame] = useState(new Chess());
     const [piece, setPiece] = useState(game.PAWN);
+    const [legalFigures, setLegalFigures] = useState(['p', 'n']);
     
     console.log(myRole);
 
@@ -99,6 +100,7 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
                     break;
                 case "hand_choose_move":
                     console.log(data);
+                    legalFigures = data.figures;
                     break;
                 default:
                     console.log("unknown event");
@@ -119,12 +121,12 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
         const brain_choose_k = document.getElementById('brain-choose-k');
         const brain_choose_q = document.getElementById('brain-choose-q');
 
-        brain_choose_p.addEventListener('click', handleChooseP);
-        brain_choose_n.addEventListener('click', handleChooseN);
-        brain_choose_r.addEventListener('click', handleChooseR);
-        brain_choose_b.addEventListener('click', handleChooseB);
-        brain_choose_k.addEventListener('click', handleChooseK);
-        brain_choose_q.addEventListener('click', handleChooseQ);
+        if (brain_choose_p != null) brain_choose_p.addEventListener('click', handleChooseP);
+        if (brain_choose_n != null) brain_choose_n.addEventListener('click', handleChooseN);
+        if (brain_choose_r != null) brain_choose_r.addEventListener('click', handleChooseR);
+        if (brain_choose_b != null) brain_choose_b.addEventListener('click', handleChooseB);
+        if (brain_choose_k != null) brain_choose_k.addEventListener('click', handleChooseK);
+        if (brain_choose_q != null) brain_choose_q.addEventListener('click', handleChooseQ);
 
         socket.addEventListener('message', handleMessage);
 
@@ -164,14 +166,21 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
             </button> */}
             
             <div className="container">
-                {(currentRole == myRole) ? (<p>your turn</p>) : (<p>wait for your turn</p>)}
-                Choose a figure:
-                <button className="btn btn-secondary" id="brain-choose-p">Pawn</button>
-                <button className="btn btn-secondary" id="brain-choose-n">Knignt</button>
-                <button className="btn btn-secondary" id="brain-choose-r">Rook</button>
-                <button className="btn btn-secondary" id="brain-choose-b">Bishop</button>
-                <button className="btn btn-secondary" id="brain-choose-k">King</button>
-                <button className="btn btn-secondary" id="brain-choose-q">Queen</button>
+                {currentRole === myRole && myRole % 2 === 0 ? <p>Your turn</p> : <p>Wait for your turn</p>}
+                {myRole % 2 === 0 && currentRole === myRole && (
+                    <>
+                    <p>Choose a figure:</p>
+                    {legalFigures.map((figure) => (
+                        <button
+                        className="btn btn-secondary"
+                        id={`brain-choose-${figure}`}
+                        key={figure}
+                        >
+                        {figure.toUpperCase()}
+                        </button>
+                    ))}
+                    </>
+                )}
             </div>
         </div>
     );
