@@ -2,6 +2,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from .models import Room, User
 import json
 from asgiref.sync import sync_to_async
+from game.chess_functions import *
 from .serializers import UserSerializer
 from game.chess_functions_fen import *
 
@@ -54,6 +55,17 @@ class RoomConsumer(AsyncWebsocketConsumer):
     users = {}
     owner = {}
 
+    def get_roles(self):
+        roles = {}
+        for user in self.users[self.room_group_name]:
+            role = self.users[self.room_group_name][user]['role']
+            if self.users[self.room_group_name][user]['team'] == 1:
+                role += "_1"
+            else:
+                role += "_2"
+            roles[role] = user
+        return roles
+
     async def connect(self):
         self.room_code = self.scope['url_route']['kwargs']['room_code']
         self.room_group_name = 'room_%s' % self.room_code
@@ -90,13 +102,11 @@ class RoomConsumer(AsyncWebsocketConsumer):
         )
 
     async def start_game(self):
+        roles = self.get_roles()
         response = {
-            'type'    : 'send_message',
-            'event'   : 'start_game',
-            'brain_1' : 0,
-            'hand_1'  : 0,
-            'brain_2' : 0,
-            'hand_2'  : 0,
+            'type': 'send_message',
+            'event': 'start_game',
+            'roles' : roles,
         }
 
         await self.channel_layer.group_send(
@@ -106,6 +116,9 @@ class RoomConsumer(AsyncWebsocketConsumer):
 
     async def user_joined(self, nickname):
         user = await sync_to_async(User.objects.create)(nickname=nickname)
+        
+        # TODO assign teams and roles in a smarter way
+
         self.users[self.room_group_name][user.id] = {
             'nickname': nickname,
             'team': 1,
@@ -157,6 +170,8 @@ class RoomConsumer(AsyncWebsocketConsumer):
 
 # tutaj można stworzyć ogólnego gameConsumer zintegrowanego z modelem Game i extendować
 class HandAndBrainConsumer(AsyncWebsocketConsumer):
+    current_user = 0
+
     async def connect(self):
         self.room_code = self.scope['url_route']['kwargs']['room_code']
         self.room_group_name = 'room_%s' % self.room_code
@@ -179,6 +194,13 @@ class HandAndBrainConsumer(AsyncWebsocketConsumer):
             "figures" : get_figures(fen),
         }))
     
+    # nie wiem czy uzyjemy, ale niech bedzie
+    async def legal_moves(self, fen):
+        moves = get_legal_moves(fen)
+        await self.send(text_data=json.dumps({
+            "legal_moves": moves,
+        }))
+
     # dostaliśmy wiadomość od reacta, że brain wybrał figure
     # [TODO] implement, powinno odsyłać nowy stan gry przez group_send jak w roomConsumer
     # pytanie co dokładnie będzie w stanie (możliwe ruchy, kto teraz się rusza, czy koniec gry...)
