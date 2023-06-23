@@ -85,6 +85,12 @@ function RoomView({ roomCode, nickname }) {
                     setLobbyVisible(false);
                     console.log(data.roles);
                     setRoles(data.roles);
+                    break;
+                case 'failed_start':
+                    if (data.userId == userId) {
+                        alert(data.content);
+                    }
+                    break;
                 default:
                     break;
             }
