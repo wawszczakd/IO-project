@@ -199,6 +199,7 @@ function RoomView({ roomCode, nickname }) {
                 {isGameRoomVisible && (
                     <GameRoom
                         connectedUsers={connectedUsers}
+                        roomCode={roomCode}
                     />
                 )}
             </div>
