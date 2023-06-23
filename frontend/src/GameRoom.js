@@ -4,6 +4,10 @@ import { Chessboard } from 'react-chessboard';
 import Chess from 'chess.js';
 
 function GameRoom({ roomCode, connectedUsers, initUser, userId }) {
+    console.log(roomCode);
+    console.log(connectedUsers);
+    console.log(userId);
+    console.log(initUser);
     const [currentUser, setCurrentUser] = useState(initUser);
     const [game, setGame] = useState(new Chess());
     const [piece, setPiece] = useState(game.PAWN);

@@ -7,6 +7,7 @@ function RoomView({ roomCode, nickname }) {
     const [ownerId, setOwnerId] = useState(null);
     const [isLobbyVisible, setLobbyVisible] = useState(true);
     const [isGameRoomVisible, setGameRoomVisible] = useState(false);
+    const [roles, setRoles] = useState(false);
 
     useEffect(() => {
         const socket = new WebSocket(`ws://localhost:8000/ws/room/${roomCode}/`);
@@ -82,6 +83,8 @@ function RoomView({ roomCode, nickname }) {
                 case 'start_game':
                     setGameRoomVisible(true);
                     setLobbyVisible(false);
+                    console.log(data.roles);
+                    setRoles(data.roles);
                 default:
                     break;
             }
@@ -200,7 +203,8 @@ function RoomView({ roomCode, nickname }) {
                     <GameRoom
                         connectedUsers={connectedUsers}
                         roomCode={roomCode}
-                        initUser="1"
+                        userId={userId}
+                        initUser={roles['brain_1']}
                     />
                 )}
             </div>
