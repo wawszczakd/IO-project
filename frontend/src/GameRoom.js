@@ -3,7 +3,8 @@ import { Chessboard } from 'react-chessboard';
 
 import Chess from 'chess.js';
 
-function GameRoom({ roomCode, connectedUsers, userId }) {
+function GameRoom({ roomCode, connectedUsers, initUser, userId }) {
+    const [currentUser, setCurrentUser] = useState(initUser);
     const [game, setGame] = useState(new Chess());
     const [piece, setPiece] = useState(game.PAWN);
 
@@ -79,16 +80,22 @@ function GameRoom({ roomCode, connectedUsers, userId }) {
             const message = {
                 type: 'brain_choose_figure',
                 figure: figure,
+                fen: game.fen(),
             }
             socket.send(JSON.stringify(message));
         }
 
         const handleMessage = (event) => {
-            const data = JSON.parse(event.data).payload;
+            const data = JSON.parse(event.data);
             switch (data.event) {
-                default:
+                case "brain_choose_figure":
                     console.log(data);
                     break;
+                case "hand_choose_move":
+                    console.log(data);
+                    break;
+                default:
+                    console.log("unknown event");
             }
         }
 
@@ -127,7 +134,7 @@ function GameRoom({ roomCode, connectedUsers, userId }) {
         }
 
     }, [roomCode, userId]);
-
+    
     return (
         <div id="game-room-section" className="text-center">
             <div>
@@ -149,7 +156,9 @@ function GameRoom({ roomCode, connectedUsers, userId }) {
             {/* <button onClick={getGameState(4)}>
                     game_state
             </button> */}
+            
             <div className="container">
+                {(currentPlayer == userId) ? (<p>your turn</p>) : (<p>wait for your turn</p>)}
                 Choose a figure:
                 <button className="btn btn-secondary" id="brain-choose-p">Pawn</button>
                 <button className="btn btn-secondary" id="brain-choose-n">Knignt</button>

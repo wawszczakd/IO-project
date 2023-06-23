@@ -2,7 +2,9 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from .models import Room, User
 import json
 from asgiref.sync import sync_to_async
+from game.chess_functions import *
 from .serializers import UserSerializer
+from game.chess_functions_fen import *
 
 class MainMenuConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -53,6 +55,17 @@ class RoomConsumer(AsyncWebsocketConsumer):
     users = {}
     owner = {}
 
+    def get_roles(self):
+        roles = {}
+        for user in self.users[self.room_group_name]:
+            role = self.users[self.room_group_name][user]['role']
+            if self.users[self.room_group_name][user]['team'] == 1:
+                role += "_1"
+            else:
+                role += "_2"
+            roles[role] = user
+        return roles
+
     async def connect(self):
         self.room_code = self.scope['url_route']['kwargs']['room_code']
         self.room_group_name = 'room_%s' % self.room_code
@@ -89,9 +102,11 @@ class RoomConsumer(AsyncWebsocketConsumer):
         )
 
     async def start_game(self):
+        roles = self.get_roles()
         response = {
             'type': 'send_message',
-            'event': 'start_game'
+            'event': 'start_game',
+            'roles' : roles,
         }
 
         await self.channel_layer.group_send(
@@ -101,6 +116,9 @@ class RoomConsumer(AsyncWebsocketConsumer):
 
     async def user_joined(self, nickname):
         user = await sync_to_async(User.objects.create)(nickname=nickname)
+        
+        # TODO assign teams and roles in a smarter way
+
         self.users[self.room_group_name][user.id] = {
             'nickname': nickname,
             'team': 1,
@@ -152,6 +170,8 @@ class RoomConsumer(AsyncWebsocketConsumer):
 
 # tutaj można stworzyć ogólnego gameConsumer zintegrowanego z modelem Game i extendować
 class HandAndBrainConsumer(AsyncWebsocketConsumer):
+    current_user = 0
+
     async def connect(self):
         self.room_code = self.scope['url_route']['kwargs']['room_code']
         self.room_group_name = 'room_%s' % self.room_code
@@ -168,26 +188,50 @@ class HandAndBrainConsumer(AsyncWebsocketConsumer):
             self.room_group_name,
             self.channel_name
         )
+    
+    async def brain_get_figures(self, fen):
+        await self.send(text_data=json.dumps({
+            "figures" : get_figures(fen),
+        }))
+    
+    # nie wiem czy uzyjemy, ale niech bedzie
+    async def legal_moves(self, fen):
+        moves = get_legal_moves(fen)
+        await self.send(text_data=json.dumps({
+            "legal_moves": moves,
+        }))
 
     # dostaliśmy wiadomość od reacta, że brain wybrał figure
     # [TODO] implement, powinno odsyłać nowy stan gry przez group_send jak w roomConsumer
     # pytanie co dokładnie będzie w stanie (możliwe ruchy, kto teraz się rusza, czy koniec gry...)
-    async def brain_choose_figure(self, figure):
-        print(figure)
+    async def brain_choose_figure(self, figure, fen):
+        moves = get_moves(fen, figure)
+        await self.send(text_data=json.dumps({
+            "event" : "brain_choose_figure",
+            "moves" : moves,
+            "fen"   : fen,
+        }))
 
     # [TODO] implement, analogicznie jak wyżej
-    async def hand_choose_move(self, move):
-        print(move)
-
+    async def hand_choose_move(self, move, fen):
+        board = chess.Board(fen)
+        board.push_san(move)
+        new_fen = board.fen()
+        figures = get_figures(new_fen)
+        await self.send(text_data=json.dumps({
+            "event"   : "hand_choose_move",
+            "figures" : figures,
+            "fen"     : new_fen,
+        }))
 
     async def receive(self, text_data):
         data = json.loads(text_data)
         message_type = data['type']
 
         if message_type == 'brain_choose_figure':
-            await self.brain_choose_figure(data['figure'])
+            await self.brain_choose_figure(data['figure'], data['fen'])
         elif message_type == 'hand_choose_move':
-            await self.hand_choose_move(data['move'])
+            await self.hand_choose_move(data['move'], data['fen'])
         
     async def send_message(self, res):
         await self.send(text_data=json.dumps({

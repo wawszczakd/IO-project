@@ -200,6 +200,7 @@ function RoomView({ roomCode, nickname }) {
                     <GameRoom
                         connectedUsers={connectedUsers}
                         roomCode={roomCode}
+                        initUser="1"
                     />
                 )}
             </div>
