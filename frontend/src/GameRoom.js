@@ -158,7 +158,7 @@ function GameRoom({ roomCode, connectedUsers, initUser, userId }) {
             </button> */}
             
             <div className="container">
-                {(currentPlayer == userId) ? (<p>your turn</p>) : (<p>wait for your turn</p>)}
+                {(currentUser == userId) ? (<p>your turn</p>) : (<p>wait for your turn</p>)}
                 Choose a figure:
                 <button className="btn btn-secondary" id="brain-choose-p">Pawn</button>
                 <button className="btn btn-secondary" id="brain-choose-n">Knignt</button>
