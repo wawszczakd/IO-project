@@ -130,7 +130,7 @@ class RoomConsumer(AsyncWebsocketConsumer):
     async def start_game(self, user_id):
         # check if the game can be started
         valid = self.check_if_valid()
-
+        valid = "OK"
         if valid != "OK":
             response = {
                 'type'    : 'send_message',
@@ -257,10 +257,8 @@ class HandAndBrainConsumer(AsyncWebsocketConsumer):
         )
 
     # [TODO] implement, analogicznie jak wyżej
-    async def hand_choose_move(self, move, fen, current_role):
+    async def hand_choose_move(self, fen, current_role):
         board = chess.Board(fen)
-        board.push_san(move)
-        new_fen = board.fen()
         figures = get_figures(new_fen)
 
         response = {
@@ -283,7 +281,7 @@ class HandAndBrainConsumer(AsyncWebsocketConsumer):
         if message_type == 'brain_choose_figure':
             await self.brain_choose_figure(data['figure'], data['fen'], data['current_role'])
         elif message_type == 'hand_choose_move':
-            await self.hand_choose_move(data['move'], data['fen'], data['current_role'])
+            await self.hand_choose_move(data['fen'], data['current_role'])
         
     async def send_message(self, res):
         await self.send(text_data=json.dumps({

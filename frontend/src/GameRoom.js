@@ -12,6 +12,7 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
     const [game, setGame] = useState(new Chess());
     const [piece, setPiece] = useState(game.PAWN);
     const [legalFigures, setLegalFigures] = useState(['p', 'n']);
+    const [legalMoves, setLegalMoves] = useState([]);
     
     console.log(myRole);
 
@@ -19,51 +20,9 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
     // (zaczyna user white brain, szachownica jest pusta, etc)
     const [gameState, setGameState] = useState(null);
 
-    function updateGame(modify) {
-        setGame((g) => {
-            const update = { ...g };
-            modify(update);
-            return update;
-        });
-    }
-
-    function makeRandomMove() {
-        const possibleMoves = game.moves();
-        if (game.game_over() || game.in_draw() || possibleMoves.length === 0) return;
-        const randomIndex = Math.floor(Math.random() * possibleMoves.length);
-        updateGame((game) => {
-            game.move(possibleMoves[randomIndex]);
-        });
-    }
-
-    function randomizePiece() {
-        const possiblePieces = [game.PAWN, game.KNIGHT, game.BISHOP, game.ROOK, game.QUEEN, game.KING];
-        const randomIndex = Math.floor(Math.random() * possiblePieces.length);
-        const newPiece = possiblePieces[randomIndex];
-        setPiece(newPiece);
-        return newPiece;
-    }
-
-    function onDrop(sourceSquare, targetSquare) {
-        if (game.get(sourceSquare).type !== piece)
-            return false;
-        let move = null;
-        updateGame((game) => {
-            move = game.move({
-                from: sourceSquare,
-                to: targetSquare,
-                promotion: 'q'
-            });
-        });
-
-        if (move == null) return false;
-        setTimeout(makeRandomMove, 200);
-        setPiece(randomizePiece());
-        return true;
-    }
-
     useEffect(() => {
         const socket = new WebSocket(`ws://localhost:8000/ws/hand_and_brain/${roomCode}/`);
+        
         const handleChooseFigure = (figure) => {
             console.log(figure);
             const message = {
@@ -74,6 +33,16 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
             }
             socket.send(JSON.stringify(message));
         }
+        
+        const handleMakeMove = () => {
+            const message = {
+                type         : 'hand_choose_move',
+                fen          : game.fen(),
+                current_role : currentRole,
+            }
+            console.log(message);
+            socket.send(JSON.stringify(message));
+        }
 
         const handleMessage = (event) => {
             const data = JSON.parse(event.data).payload;
@@ -82,6 +51,7 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
                 case "brain_choose_figure":
                     setCurrentRole(data.current_role);
                     console.log(data);
+                    setLegalMoves(data.moves);
                     break;
                 case "hand_choose_move":
                     setCurrentRole(data.current_role);
@@ -129,27 +99,40 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
 
     }, [roomCode, userId]);
     
+    function updateGame(modify) {
+        setGame((g) => {
+            const update = { ...g };
+            modify(update);
+            return update;
+        });
+    }
+
+    function onDrop(sourceSquare, targetSquare) {
+        const moveUCI = `${sourceSquare}${targetSquare}`;
+        if (!legalMoves.includes(moveUCI)) {
+            return false;
+        }
+        
+        let move = null;
+        updateGame((game) => {
+            move = game.move({
+            from: sourceSquare,
+            to: targetSquare,
+            promotion: 'q'
+            });
+        });
+
+        if (move === null) return false;
+        handleMakeMove();
+        return true;
+    }
+    
     return (
         <div id="game-room-section" className="text-center">
             <div>
                 <Chessboard position={game.fen()} onPieceDrop={onDrop} />
                 {game.fen()}
             </div>
-            <div>
-                {piece}
-            </div>
-            <div>
-                <button
-                    onClick={() => {
-                        randomizePiece();
-                    }}
-                >
-                    reroll piece
-                </button>
-            </div>
-            {/* <button onClick={getGameState(4)}>
-                    game_state
-            </button> */}
             
             <div className="container">
                 {currentRole === myRole ? <p>Your turn</p> : <p>Wait for your turn</p>}
