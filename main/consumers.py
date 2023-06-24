@@ -152,13 +152,34 @@ class RoomConsumer(AsyncWebsocketConsumer):
 
     async def user_joined(self, nickname):
         user = await sync_to_async(User.objects.create)(nickname=nickname)
+
+        users = self.users[self.room_group_name]
+
+        print(users)
+        team1, team2 = [], [] 
         
-        # TODO assign teams and roles in a smarter way
+        for id in users:
+            if users[id]['team'] == 1:
+                team1.append(users[id]['role'])
+            else:
+                team2.append(users[id]['role'])
+    
+        team = 1 if len(team1) < 2 else 2
+        
+        role = 'brain'
+        if team == 1:
+            if len(team1) > 0:
+                if team1[0] == 'brain':
+                    role = 'hand'
+        else: 
+            if len(team2) > 0:
+                if team2[0] == 'brain':
+                    role = 'hand'
 
         self.users[self.room_group_name][user.id] = {
             "nickname": nickname,
-            "team": 1,
-            "role": "hand",
+            "team": team,
+            "role": role,
         }
         if (self.owner[self.room_group_name] == None):
             self.owner[self.room_group_name] = user
