@@ -154,7 +154,7 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
     
     return (
         <div id="game-room-section" className="text-center">
-            <div>
+            <div style={{ display: 'none' }}>
                 <button ref={buttonRef} id="hand-move">Hand move</button>
             </div>
             <div>
