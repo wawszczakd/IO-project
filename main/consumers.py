@@ -15,20 +15,20 @@ class MainMenuConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data):
         data = json.loads(text_data)
-        message_type = data['type']
-        message_payload = data['payload']
+        message_type = data["type"]
+        message_payload = data["payload"]
 
-        if message_type == 'create_room':
+        if message_type == "create_room":
             await self.create_room(message_payload)
-        elif message_type == 'join_room':
+        elif message_type == "join_room":
             await self.join_room(message_payload)
 
     async def create_room(self, room_code):
         room = await sync_to_async(Room.objects.create)(code=room_code)
         response = {
-            'type'          : 'room_created',
-            'payload'       : {
-                'room_code' : room.code,
+            "type"          : "room_created",
+            "payload"       : {
+                "room_code" : room.code,
             }
         }
         await self.send(json.dumps(response))
@@ -37,16 +37,16 @@ class MainMenuConsumer(AsyncWebsocketConsumer):
         try:
             room = await sync_to_async(Room.objects.get)(code=room_code)
             response = {
-                'type'    : 'room_joined',
-                'payload' : {
-                    'room_code' : room.code,
+                "type"    : "room_joined",
+                "payload" : {
+                    "room_code" : room.code,
                 }
             }
         except Room.DoesNotExist:
             response = {
-                'type'    : 'room_not_found',
-                'payload' : {
-                    'error' : 'Room does not exist.',
+                "type"    : "room_not_found",
+                "payload" : {
+                    "error" : "Room does not exist.",
                 }
             }
         await self.send(json.dumps(response))
@@ -66,8 +66,8 @@ class RoomConsumer(AsyncWebsocketConsumer):
             roles = set()
             
             for user in users:
-                role = users[user]['role']
-                if users[user]['team'] == 1:
+                role = users[user]["role"]
+                if users[user]["team"] == 1:
                     role += "_1"
                 else:
                     role += "_2"
@@ -84,8 +84,8 @@ class RoomConsumer(AsyncWebsocketConsumer):
         
         roles = {}
         for user in users:
-            role = users[user]['role']
-            if users[user]['team'] == 1:
+            role = users[user]["role"]
+            if users[user]["team"] == 1:
                 role += "_1"
             else:
                 role += "_2"
@@ -93,8 +93,8 @@ class RoomConsumer(AsyncWebsocketConsumer):
         return roles
 
     async def connect(self):
-        self.room_code = self.scope['url_route']['kwargs']['room_code']
-        self.room_group_name = 'room_%s' % self.room_code
+        self.room_code = self.scope["url_route"]["kwargs"]["room_code"]
+        self.room_group_name = "room_%s" % self.room_code
 
         if (self.users.get(self.room_group_name, None) == None):
             self.owner[self.room_group_name] = None
@@ -115,11 +115,11 @@ class RoomConsumer(AsyncWebsocketConsumer):
 
     async def broadcast_users(self, new_id=-1):
         response = {
-            'type'            : 'send_message',
-            'event'           : 'connected_users',
-            'connected_users' : self.users[self.room_group_name],
-            'owner_id'        : self.owner[self.room_group_name].id if self.owner[self.room_group_name] else -1,
-            'new_id'          : new_id
+            "type"            : "send_message",
+            "event"           : "connected_users",
+            "connected_users" : self.users[self.room_group_name],
+            "owner_id"        : self.owner[self.room_group_name].id if self.owner[self.room_group_name] else -1,
+            "new_id"          : new_id
         }
 
         await self.channel_layer.group_send(
@@ -132,17 +132,17 @@ class RoomConsumer(AsyncWebsocketConsumer):
         
         if valid != "OK":
             response = {
-                'type'    : 'send_message',
-                'event'   : 'failed_start',
-                'userId'  : user_id,
-                'content' : valid,
+                "type"    : "send_message",
+                "event"   : "failed_start",
+                "userId"  : user_id,
+                "content" : valid,
             }
         else:
             roles = self.get_roles()
             response = {
-                'type'  : 'send_message',
-                'event' : 'start_game',
-                'roles' : roles,
+                "type"  : "send_message",
+                "event" : "start_game",
+                "roles" : roles,
             }
         
         await self.channel_layer.group_send(
@@ -156,9 +156,9 @@ class RoomConsumer(AsyncWebsocketConsumer):
         # TODO assign teams and roles in a smarter way
 
         self.users[self.room_group_name][user.id] = {
-            'nickname': nickname,
-            'team': 1,
-            'role': 'hand',
+            "nickname": nickname,
+            "team": 1,
+            "role": "hand",
         }
         if (self.owner[self.room_group_name] == None):
             self.owner[self.room_group_name] = user
@@ -177,27 +177,27 @@ class RoomConsumer(AsyncWebsocketConsumer):
         await self.broadcast_users()
 
     async def team_changed(self, user_id, new_team):
-        self.users[self.room_group_name][user_id]['team'] = new_team
+        self.users[self.room_group_name][user_id]["team"] = new_team
         await self.broadcast_users()
 
     async def role_changed(self, user_id, new_role):
-        self.users[self.room_group_name][user_id]['role'] = new_role
+        self.users[self.room_group_name][user_id]["role"] = new_role
         await self.broadcast_users()
 
     async def receive(self, text_data):
         data = json.loads(text_data)
-        message_type = data['type']
+        message_type = data["type"]
 
-        if message_type == 'user_joined':
-            await self.user_joined(data['nickname'])
-        elif message_type == 'user_left':
-            await self.user_left(data['user_id'])
-        elif message_type == 'team_changed':
-            await self.team_changed(data['user_id'], data['new_team'])
-        elif message_type == 'role_changed':
-            await self.role_changed(data['user_id'], data['new_role'])
-        elif message_type == 'start_game':
-            await self.start_game(data['user_id'])
+        if message_type == "user_joined":
+            await self.user_joined(data["nickname"])
+        elif message_type == "user_left":
+            await self.user_left(data["user_id"])
+        elif message_type == "team_changed":
+            await self.team_changed(data["user_id"], data["new_team"])
+        elif message_type == "role_changed":
+            await self.role_changed(data["user_id"], data["new_role"])
+        elif message_type == "start_game":
+            await self.start_game(data["user_id"])
      
     async def send_message(self, res):
         await self.send(text_data=json.dumps({
@@ -206,10 +206,9 @@ class RoomConsumer(AsyncWebsocketConsumer):
 
 # tutaj można stworzyć ogólnego gameConsumer zintegrowanego z modelem Game i extendować
 class HandAndBrainConsumer(AsyncWebsocketConsumer):
-    
     async def connect(self):
-        self.room_code = self.scope['url_route']['kwargs']['room_code']
-        self.room_group_name = 'room_%s' % self.room_code
+        self.room_code = self.scope["url_route"]["kwargs"]["room_code"]
+        self.room_group_name = "room_%s" % self.room_code
 
         await self.channel_layer.group_add(
             self.room_group_name,
@@ -242,16 +241,23 @@ class HandAndBrainConsumer(AsyncWebsocketConsumer):
         )
 
     async def hand_choose_move(self, fen, current_role):
-        board = chess.Board(fen)
-        figures = get_figures(fen)
-
-        response = {
-            'type'         : 'send_message',
-            "event"        : "hand_choose_move",
-            "figures"      : figures,
-            "fen"          : fen,
-            "current_role" : (current_role+1)%4,
-        }
+        finished = is_finished(fen)
+        if finished != "The game is still in progress.":
+            response = {
+                "type"         : "send_message",
+                "event"        : "game_finished",
+                "content"      : finished,
+                "fen"          : fen,
+            }
+        else:
+            figures = get_figures(fen)
+            response = {
+                "type"         : "send_message",
+                "event"        : "hand_choose_move",
+                "figures"      : figures,
+                "fen"          : fen,
+                "current_role" : (current_role + 1) % 4,
+            }
 
         await self.channel_layer.group_send(
             self.room_group_name,
@@ -260,12 +266,12 @@ class HandAndBrainConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data):
         data = json.loads(text_data)
-        message_type = data['type']
+        message_type = data["type"]
 
-        if message_type == 'brain_choose_figure':
-            await self.brain_choose_figure(data['figure'], data['fen'], data['current_role'])
-        elif message_type == 'hand_choose_move':
-            await self.hand_choose_move(data['fen'], data['current_role'])
+        if message_type == "brain_choose_figure":
+            await self.brain_choose_figure(data["figure"], data["fen"], data["current_role"])
+        elif message_type == "hand_choose_move":
+            await self.hand_choose_move(data["fen"], data["current_role"])
         
     async def send_message(self, res):
         await self.send(text_data=json.dumps({

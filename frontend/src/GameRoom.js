@@ -9,6 +9,8 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
     const [legalFigures, setLegalFigures] = useState(['p', 'n']);
     const [legalMoves, setLegalMoves] = useState([]);
     const [chosenFigure, setChosenFigure] = useState('none');
+    const [isFinished, setIsFinished] = useState(false);
+    const [finishMessage, setFinishMessage] = useState('');
 
     const [isMoveMade, setIsMoveMade] = useState(false);
 
@@ -67,6 +69,11 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
                     setLegalFigures(data.figures);
                     setGame(new Chess(data.fen));
                     break;
+                case "game_finished":
+                    setCurrentRole(4);
+                    setGame(new Chess(data.fen));
+                    setIsFinished(true);
+                    setFinishMessage(data.content);
                 default:
                     console.log("unknown event");
             }
@@ -132,9 +139,9 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
         let move = null;
         updateGame((game) => {
             move = game.move({
-            from: sourceSquare,
-            to: targetSquare,
-            promotion: 'q'
+                from: sourceSquare,
+                to: targetSquare,
+                promotion: 'q'
             });
         });
 
@@ -176,6 +183,11 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
                 {myRole % 2 === 1 && currentRole === myRole && (
                     <>
                     <p>Figure chosen by brain: {chosenFigure}</p>
+                    </>
+                )}
+                {isFinished && (
+                    <>
+                    <p>{finishMessage}</p>
                     </>
                 )}
             </div>
