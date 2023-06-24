@@ -55,11 +55,37 @@ class RoomConsumer(AsyncWebsocketConsumer):
     users = {}
     owner = {}
 
+    def check_if_valid(self):
+        users = self.users[self.room_group_name]
+        
+        if len(users) < 4:
+            return "Too few players"
+        elif len(users) > 4:
+            return "Too many players"
+        else:
+            roles = set()
+            
+            for user in users:
+                role = users[user]['role']
+                if users[user]['team'] == 1:
+                    role += "_1"
+                else:
+                    role += "_2"
+                
+                if role in roles:
+                    return "More than one player with the same role"
+                
+                roles.add(role)
+        
+        return "OK"
+    
     def get_roles(self):
+        users = self.users[self.room_group_name]
+        
         roles = {}
-        for user in self.users[self.room_group_name]:
-            role = self.users[self.room_group_name][user]['role']
-            if self.users[self.room_group_name][user]['team'] == 1:
+        for user in users:
+            role = users[user]['role']
+            if users[user]['team'] == 1:
                 role += "_1"
             else:
                 role += "_2"
@@ -101,14 +127,25 @@ class RoomConsumer(AsyncWebsocketConsumer):
             response
         )
 
-    async def start_game(self):
-        roles = self.get_roles()
-        response = {
-            'type': 'send_message',
-            'event': 'start_game',
-            'roles' : roles,
-        }
-
+    async def start_game(self, user_id):
+        # check if the game can be started
+        valid = self.check_if_valid()
+        valid = "OK"
+        if valid != "OK":
+            response = {
+                'type'    : 'send_message',
+                'event'   : 'failed_start',
+                'userId'  : user_id,
+                'content' : valid,
+            }
+        else:
+            roles = self.get_roles()
+            response = {
+                'type'  : 'send_message',
+                'event' : 'start_game',
+                'roles' : roles,
+            }
+        
         await self.channel_layer.group_send(
             self.room_group_name,
             response
@@ -161,7 +198,7 @@ class RoomConsumer(AsyncWebsocketConsumer):
         elif message_type == 'role_changed':
             await self.role_changed(data['user_id'], data['new_role'])
         elif message_type == 'start_game':
-            await self.start_game()
+            await self.start_game(data['user_id'])
      
     async def send_message(self, res):
         await self.send(text_data=json.dumps({
@@ -170,8 +207,7 @@ class RoomConsumer(AsyncWebsocketConsumer):
 
 # tutaj można stworzyć ogólnego gameConsumer zintegrowanego z modelem Game i extendować
 class HandAndBrainConsumer(AsyncWebsocketConsumer):
-    current_user = 0
-
+    
     async def connect(self):
         self.room_code = self.scope['url_route']['kwargs']['room_code']
         self.room_group_name = 'room_%s' % self.room_code
@@ -204,34 +240,48 @@ class HandAndBrainConsumer(AsyncWebsocketConsumer):
     # dostaliśmy wiadomość od reacta, że brain wybrał figure
     # [TODO] implement, powinno odsyłać nowy stan gry przez group_send jak w roomConsumer
     # pytanie co dokładnie będzie w stanie (możliwe ruchy, kto teraz się rusza, czy koniec gry...)
-    async def brain_choose_figure(self, figure, fen):
+    async def brain_choose_figure(self, figure, fen, current_role):
         moves = get_moves(fen, figure)
-        await self.send(text_data=json.dumps({
+
+        response = {
+            'type'  : 'send_message',
             "event" : "brain_choose_figure",
             "moves" : moves,
             "fen"   : fen,
-        }))
+            "current_role" : (current_role+1)%4,
+        }
+
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            response
+        )
 
     # [TODO] implement, analogicznie jak wyżej
-    async def hand_choose_move(self, move, fen):
+    async def hand_choose_move(self, fen, current_role):
         board = chess.Board(fen)
-        board.push_san(move)
-        new_fen = board.fen()
-        figures = get_figures(new_fen)
-        await self.send(text_data=json.dumps({
+        figures = get_figures(fen)
+
+        response = {
+            'type'  : 'send_message',
             "event"   : "hand_choose_move",
             "figures" : figures,
-            "fen"     : new_fen,
-        }))
+            "fen"     : fen,
+            "current_role" : (current_role+1)%4,
+        }
+
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            response
+        )
 
     async def receive(self, text_data):
         data = json.loads(text_data)
         message_type = data['type']
 
         if message_type == 'brain_choose_figure':
-            await self.brain_choose_figure(data['figure'], data['fen'])
+            await self.brain_choose_figure(data['figure'], data['fen'], data['current_role'])
         elif message_type == 'hand_choose_move':
-            await self.hand_choose_move(data['move'], data['fen'])
+            await self.hand_choose_move(data['fen'], data['current_role'])
         
     async def send_message(self, res):
         await self.send(text_data=json.dumps({

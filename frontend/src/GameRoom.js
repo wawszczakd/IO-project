@@ -1,104 +1,90 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Chessboard } from 'react-chessboard';
 
 import Chess from 'chess.js';
 
-function GameRoom({ roomCode, connectedUsers, initUser, userId }) {
-    const [currentUser, setCurrentUser] = useState(initUser);
+function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
+    console.log(roomCode);
+    console.log(connectedUsers);
+    //console.log(userId);
+    //console.log(initUser);
+    const [currentRole, setCurrentRole] = useState(0);
     const [game, setGame] = useState(new Chess());
     const [piece, setPiece] = useState(game.PAWN);
+    const [legalFigures, setLegalFigures] = useState(['p', 'n']);
+    const [legalMoves, setLegalMoves] = useState([]);
+    console.log(myRole);
 
+    const [isMoveMade, setIsMoveMade] = useState(false);
     // [TODO]: zainicjalizowanie na startowy state 
     // (zaczyna user white brain, szachownica jest pusta, etc)
     const [gameState, setGameState] = useState(null);
 
-    function updateGame(modify) {
-        setGame((g) => {
-            const update = { ...g };
-            modify(update);
-            return update;
-        });
-    }
-
-    function makeRandomMove() {
-        const possibleMoves = game.moves();
-        if (game.game_over() || game.in_draw() || possibleMoves.length === 0) return;
-        const randomIndex = Math.floor(Math.random() * possibleMoves.length);
-        updateGame((game) => {
-            game.move(possibleMoves[randomIndex]);
-        });
-    }
-
-    function randomizePiece() {
-        const possiblePieces = [game.PAWN, game.KNIGHT, game.BISHOP, game.ROOK, game.QUEEN, game.KING];
-        const randomIndex = Math.floor(Math.random() * possiblePieces.length);
-        const newPiece = possiblePieces[randomIndex];
-        setPiece(newPiece);
-        return newPiece;
-    }
-
-    function onDrop(sourceSquare, targetSquare) {
-        if (game.get(sourceSquare).type !== piece)
-            return false;
-        let move = null;
-        updateGame((game) => {
-            move = game.move({
-                from: sourceSquare,
-                to: targetSquare,
-                promotion: 'q'
-            });
-        });
-
-        if (move == null) return false;
-        setTimeout(makeRandomMove, 200);
-        setPiece(randomizePiece());
-        return true;
-    }
-
-    // [TODO] czy na pewno fetch? Raczej chcemy używać websocketów, które
-    // odsyłają stan wszystkim, dla synchronizacji
-    // + coś jest nie tak w routingu i nie czyta i tak api
-    // na razie zakomentowałem button
-    function getGameState(game_id) {
-        const url = "http://localhost:8000/api/gamehandandbrain/4/";
-        fetch(url)
-            .then(response => response.json())
-            .then(data => {
-                // Work with the JSON data
-                console.log(data);
-            })
-            .catch(error => {
-                // Handle any errors
-                console.error('Error:', error);
-            });
-    }
-
     useEffect(() => {
         const socket = new WebSocket(`ws://localhost:8000/ws/hand_and_brain/${roomCode}/`);
+        
+        socket.addEventListener('open', () => {
+            if (isMoveMade) {
+              const message = {
+                type: 'hand_choose_move',
+                fen: game.fen(),
+                current_role: currentRole,
+              };
+              console.log("Sending message:", message);
+              socket.send(JSON.stringify(message));
+              setIsMoveMade(false);
+            }
+        });
+
         const handleChooseFigure = (figure) => {
             console.log(figure);
             const message = {
                 type: 'brain_choose_figure',
                 figure: figure,
                 fen: game.fen(),
+                current_role: currentRole,
             }
             socket.send(JSON.stringify(message));
         }
+        
+        const handleMakeMove = () => {
+            const message = {
+                type         : 'hand_choose_move',
+                fen          : game.fen(),
+                current_role : currentRole,
+            }
+            console.log(message);
+            socket.send(JSON.stringify(message));
+            console.log("handleMakeMove done");
+        }
 
         const handleMessage = (event) => {
-            const data = JSON.parse(event.data);
+            const data = JSON.parse(event.data).payload;
+            console.log(data);
             switch (data.event) {
                 case "brain_choose_figure":
+                    console.log("case brain_choose_figure");
+                    setCurrentRole(data.current_role);
+                    console.log("new currentRole: " + currentRole);
                     console.log(data);
+                    console.log(data.current_role + " " + currentRole);
+                    setLegalMoves(data.moves);
                     break;
                 case "hand_choose_move":
+                    console.log("case hand_choose_move");
+                    setCurrentRole(data.current_role);
+                    console.log("new currentRole: " + currentRole);
                     console.log(data);
+                    setLegalFigures(data.figures);
                     break;
                 default:
                     console.log("unknown event");
             }
         }
-
+        
+        const hand_move = document.getElementById('hand-move');
+        if (hand_move != null) hand_move.addEventListener('click', handleMakeMove);
+        
         const handleChooseP = () => { return handleChooseFigure('p'); }
         const handleChooseN = () => { return handleChooseFigure('n'); }
         const handleChooseR = () => { return handleChooseFigure('r'); }
@@ -113,59 +99,85 @@ function GameRoom({ roomCode, connectedUsers, initUser, userId }) {
         const brain_choose_k = document.getElementById('brain-choose-k');
         const brain_choose_q = document.getElementById('brain-choose-q');
 
-        brain_choose_p.addEventListener('click', handleChooseP);
-        brain_choose_n.addEventListener('click', handleChooseN);
-        brain_choose_r.addEventListener('click', handleChooseR);
-        brain_choose_b.addEventListener('click', handleChooseB);
-        brain_choose_k.addEventListener('click', handleChooseK);
-        brain_choose_q.addEventListener('click', handleChooseQ);
+        if (brain_choose_p != null) brain_choose_p.addEventListener('click', handleChooseP);
+        if (brain_choose_n != null) brain_choose_n.addEventListener('click', handleChooseN);
+        if (brain_choose_r != null) brain_choose_r.addEventListener('click', handleChooseR);
+        if (brain_choose_b != null) brain_choose_b.addEventListener('click', handleChooseB);
+        if (brain_choose_k != null) brain_choose_k.addEventListener('click', handleChooseK);
+        if (brain_choose_q != null) brain_choose_q.addEventListener('click', handleChooseQ);
 
         socket.addEventListener('message', handleMessage);
 
         return () => {
-            brain_choose_p.removeEventListener('click', handleChooseP);
-            brain_choose_n.removeEventListener('click', handleChooseN);
-            brain_choose_r.removeEventListener('click', handleChooseR);
-            brain_choose_b.removeEventListener('click', handleChooseB);
-            brain_choose_k.removeEventListener('click', handleChooseK);
-            brain_choose_q.removeEventListener('click', handleChooseQ);
+            if (brain_choose_p != null) brain_choose_p.removeEventListener('click', handleChooseP);
+            if (brain_choose_n != null) brain_choose_n.removeEventListener('click', handleChooseN);
+            if (brain_choose_r != null) brain_choose_r.removeEventListener('click', handleChooseR);
+            if (brain_choose_b != null) brain_choose_b.removeEventListener('click', handleChooseB);
+            if (brain_choose_k != null) brain_choose_k.removeEventListener('click', handleChooseK);
+            if (brain_choose_q != null) brain_choose_q.removeEventListener('click', handleChooseQ);
 
             socket.removeEventListener('message', handleMessage);
         }
 
-    }, [roomCode, userId]);
+    }, [roomCode, userId, isMoveMade, game, myRole]);
+
+    function updateGame(modify) {
+        setGame((g) => {
+            const update = { ...g };
+            modify(update);
+            return update;
+        });
+    }
+
+    function onDrop(sourceSquare, targetSquare) {
+        const moveUCI = `${sourceSquare}${targetSquare}`;
+        if (!legalMoves.includes(moveUCI)) {
+            return false;
+        }
+        
+        let move = null;
+        updateGame((game) => {
+            move = game.move({
+            from: sourceSquare,
+            to: targetSquare,
+            promotion: 'q'
+            });
+        });
+
+        if (move === null) return false;
+        //console.log(currentRole);
+        setIsMoveMade(true);
+        return true;
+    }
+    
+    const buttonRef = useRef(null);
     
     return (
         <div id="game-room-section" className="text-center">
             <div>
+                <button ref={buttonRef} id="hand-move">Hand move</button>
+            </div>
+            <div>
                 <Chessboard position={game.fen()} onPieceDrop={onDrop} />
                 {game.fen()}
             </div>
-            <div>
-                {piece}
-            </div>
-            <div>
-                <button
-                    onClick={() => {
-                        randomizePiece();
-                    }}
-                >
-                    reroll piece
-                </button>
-            </div>
-            {/* <button onClick={getGameState(4)}>
-                    game_state
-            </button> */}
             
             <div className="container">
-                {(currentUser == userId) ? (<p>your turn</p>) : (<p>wait for your turn</p>)}
-                Choose a figure:
-                <button className="btn btn-secondary" id="brain-choose-p">Pawn</button>
-                <button className="btn btn-secondary" id="brain-choose-n">Knignt</button>
-                <button className="btn btn-secondary" id="brain-choose-r">Rook</button>
-                <button className="btn btn-secondary" id="brain-choose-b">Bishop</button>
-                <button className="btn btn-secondary" id="brain-choose-k">King</button>
-                <button className="btn btn-secondary" id="brain-choose-q">Queen</button>
+                {currentRole === myRole ? <p>Your turn</p> : <p>Wait for your turn</p>}
+                {myRole % 2 === 0 && currentRole === myRole && (
+                    <>
+                    <p>Choose a figure:</p>
+                    {legalFigures.map((figure) => (
+                        <button
+                        className="btn btn-secondary"
+                        id={`brain-choose-${figure}`}
+                        key={figure}
+                        >
+                        {figure.toUpperCase()}
+                        </button>
+                    ))}
+                    </>
+                )}
             </div>
         </div>
     );
