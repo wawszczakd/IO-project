@@ -111,6 +111,8 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
         socket.addEventListener('message', handleMessage);
 
         return () => {
+            if (hand_move != null) hand_move.removeEventListener('click', handleMakeMove);
+            
             if (brain_choose_p != null) brain_choose_p.removeEventListener('click', handleChooseP);
             if (brain_choose_n != null) brain_choose_n.removeEventListener('click', handleChooseN);
             if (brain_choose_r != null) brain_choose_r.removeEventListener('click', handleChooseR);
@@ -132,6 +134,8 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
     }
 
     function onDrop(sourceSquare, targetSquare) {
+        if (currentRole != myRole) return false;
+        
         const moveUCI = `${sourceSquare}${targetSquare}`;
         if (!legalMoves.includes(moveUCI)) {
             return false;
