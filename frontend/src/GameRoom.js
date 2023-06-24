@@ -16,10 +16,10 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
 
     useEffect(() => {
         const socket = new WebSocket(`ws://localhost:8000/ws/hand_and_brain/${roomCode}/`);
-        
+
         socket.addEventListener('open', () => {
             if (isMoveMade) {
-              const message = {
+                const message = {
                 type         : 'hand_choose_move',
                 fen          : game.fen(),
                 current_role : currentRole,
@@ -28,6 +28,12 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
               setIsMoveMade(false);
             }
         });
+
+    }, [isMoveMade]);
+
+
+    useEffect(() => {
+        const socket = new WebSocket(`ws://localhost:8000/ws/hand_and_brain/${roomCode}/`);
 
         const handleChooseFigure = (figure) => {
             const message = {
@@ -38,12 +44,12 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
             }
             socket.send(JSON.stringify(message));
         }
-        
+
         const handleMakeMove = () => {
             const message = {
-                type         : 'hand_choose_move',
-                fen          : game.fen(),
-                current_role : currentRole,
+                type: 'hand_choose_move',
+                fen: game.fen(),
+                current_role: currentRole,
             }
             console.log(message);
             socket.send(JSON.stringify(message));
@@ -56,20 +62,17 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
                 case "brain_choose_figure":
                     console.log("case brain_choose_figure");
                     setCurrentRole(data.current_role);
-                    //console.log("new currentRole: " + currentRole);
-                    //console.log(data);
                     setLegalMoves(data.moves);
                     setChosenFigure(data.chosen_figure);
                     break;
                 case "hand_choose_move":
                     console.log("case hand_choose_move");
                     setCurrentRole(data.current_role);
-                    //console.log("new currentRole: " + currentRole);
-                    //console.log(data);
                     setLegalFigures(data.figures);
                     setGame(new Chess(data.fen));
                     break;
                 case "game_finished":
+                    console.log("gra skończona");
                     setCurrentRole(4);
                     setGame(new Chess(data.fen));
                     setIsFinished(true);
@@ -78,10 +81,10 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
                     console.log("unknown event");
             }
         }
-        
+
         const hand_move = document.getElementById('hand-move');
         if (hand_move != null) hand_move.addEventListener('click', handleMakeMove);
-        
+
         const handleChooseP = () => { return handleChooseFigure('p'); }
         const handleChooseN = () => { return handleChooseFigure('n'); }
         const handleChooseR = () => { return handleChooseFigure('r'); }
@@ -107,7 +110,7 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
 
         return () => {
             if (hand_move != null) hand_move.removeEventListener('click', handleMakeMove);
-            
+
             if (brain_choose_p != null) brain_choose_p.removeEventListener('click', handleChooseP);
             if (brain_choose_n != null) brain_choose_n.removeEventListener('click', handleChooseN);
             if (brain_choose_r != null) brain_choose_r.removeEventListener('click', handleChooseR);
@@ -118,7 +121,7 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
             socket.removeEventListener('message', handleMessage);
         }
 
-    }, [roomCode, userId, isMoveMade, game, myRole]);
+    }, [roomCode, userId, game, myRole]);
 
     function updateGame(modify) {
         setGame((g) => {
@@ -130,12 +133,12 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
 
     function onDrop(sourceSquare, targetSquare) {
         if (currentRole != myRole) return false;
-        
+
         const moveUCI = `${sourceSquare}${targetSquare}`;
         if (!legalMoves.includes(moveUCI)) {
             return false;
         }
-        
+
         let move = null;
         updateGame((game) => {
             move = game.move({
@@ -149,42 +152,49 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
         setIsMoveMade(true);
         return true;
     }
-    
+
     return (
         <div id="game-room-section" className="text-center">
             <div>
                 <Chessboard position={game.fen()} onPieceDrop={onDrop} boardOrientation={myRole < 2 ? 'white' : 'black'} />
                 {game.fen()}
             </div>
-            
+
             <br />
-            
+
             <div className="container">
-                {currentRole === myRole ? <p>Your turn</p> : <p>Wait for your turn</p>}
-                {myRole % 2 === 0 && currentRole === myRole && (
+                {isFinished ? (
                     <>
-                    <p>Choose a figure:</p>
-                    {legalFigures.map((figure) => (
-                        <button
-                        className="btn btn-secondary"
-                        id={`brain-choose-${figure}`}
-                        key={figure}
-                        >
-                        {figure.toUpperCase()}
-                        </button>
-                    ))}
+                        <p>{finishMessage}</p>
+                    </>
+                ) : (
+                    <>
+                        {currentRole === myRole ? (
+                            <p>Your turn</p>
+                        ) : (
+                            <p>Wait for your turn</p>
+                        )}
+                        {myRole % 2 === 0 && currentRole === myRole && (
+                            <>
+                                <p>Choose a figure:</p>
+                                {legalFigures.map((figure) => (
+                                    <button
+                                        className="btn btn-secondary"
+                                        id={`brain-choose-${figure}`}
+                                        key={figure} >
+                                        {figure.toUpperCase()}
+                                    </button>
+                                ))}
+                            </>
+                        )}
+                        {myRole % 2 === 1 && currentRole === myRole && (
+                            <>
+                                <p>Figure chosen by brain: {chosenFigure}</p>
+                            </>
+                        )}
                     </>
                 )}
-                {myRole % 2 === 1 && currentRole === myRole && (
-                    <>
-                    <p>Figure chosen by brain: {chosenFigure}</p>
-                    </>
-                )}
-                {isFinished && (
-                    <>
-                    <p>{finishMessage}</p>
-                    </>
-                )}
+
             </div>
         </div>
     );
