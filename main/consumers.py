@@ -26,9 +26,9 @@ class MainMenuConsumer(AsyncWebsocketConsumer):
     async def create_room(self, room_code):
         room = await sync_to_async(Room.objects.create)(code=room_code)
         response = {
-            'type': 'room_created',
-            'payload': {
-                'room_code': room.code,
+            'type'          : 'room_created',
+            'payload'       : {
+                'room_code' : room.code,
             }
         }
         await self.send(json.dumps(response))
@@ -37,16 +37,16 @@ class MainMenuConsumer(AsyncWebsocketConsumer):
         try:
             room = await sync_to_async(Room.objects.get)(code=room_code)
             response = {
-                'type': 'room_joined',
-                'payload': {
-                    'room_code': room.code,
+                'type'    : 'room_joined',
+                'payload' : {
+                    'room_code' : room.code,
                 }
             }
         except Room.DoesNotExist:
             response = {
-                'type': 'room_not_found',
-                'payload': {
-                    'error': 'Room does not exist.',
+                'type'    : 'room_not_found',
+                'payload' : {
+                    'error' : 'Room does not exist.',
                 }
             }
         await self.send(json.dumps(response))
@@ -115,11 +115,11 @@ class RoomConsumer(AsyncWebsocketConsumer):
 
     async def broadcast_users(self, new_id=-1):
         response = {
-            'type': 'send_message',
-            'event': 'connected_users',
-            'connected_users': self.users[self.room_group_name],
-            'owner_id': self.owner[self.room_group_name].id if self.owner[self.room_group_name] else -1,
-            'new_id': new_id
+            'type'            : 'send_message',
+            'event'           : 'connected_users',
+            'connected_users' : self.users[self.room_group_name],
+            'owner_id'        : self.owner[self.room_group_name].id if self.owner[self.room_group_name] else -1,
+            'new_id'          : new_id
         }
 
         await self.channel_layer.group_send(
@@ -128,9 +128,8 @@ class RoomConsumer(AsyncWebsocketConsumer):
         )
 
     async def start_game(self, user_id):
-        # check if the game can be started
         valid = self.check_if_valid()
-        valid = "OK"
+        
         if valid != "OK":
             response = {
                 'type'    : 'send_message',
@@ -224,22 +223,7 @@ class HandAndBrainConsumer(AsyncWebsocketConsumer):
             self.room_group_name,
             self.channel_name
         )
-    
-    async def brain_get_figures(self, fen):
-        await self.send(text_data=json.dumps({
-            "figures" : get_figures(fen),
-        }))
-    
-    # nie wiem czy uzyjemy, ale niech bedzie
-    async def legal_moves(self, fen):
-        moves = get_legal_moves(fen)
-        await self.send(text_data=json.dumps({
-            "legal_moves": moves,
-        }))
 
-    # dostaliśmy wiadomość od reacta, że brain wybrał figure
-    # [TODO] implement, powinno odsyłać nowy stan gry przez group_send jak w roomConsumer
-    # pytanie co dokładnie będzie w stanie (możliwe ruchy, kto teraz się rusza, czy koniec gry...)
     async def brain_choose_figure(self, figure, fen, current_role):
         moves = get_moves(fen, figure)
 
@@ -257,16 +241,15 @@ class HandAndBrainConsumer(AsyncWebsocketConsumer):
             response
         )
 
-    # [TODO] implement, analogicznie jak wyżej
     async def hand_choose_move(self, fen, current_role):
         board = chess.Board(fen)
         figures = get_figures(fen)
 
         response = {
-            'type'  : 'send_message',
-            "event"   : "hand_choose_move",
-            "figures" : figures,
-            "fen"     : fen,
+            'type'         : 'send_message',
+            "event"        : "hand_choose_move",
+            "figures"      : figures,
+            "fen"          : fen,
             "current_role" : (current_role+1)%4,
         }
 

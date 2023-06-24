@@ -4,21 +4,13 @@ import { Chessboard } from 'react-chessboard';
 import Chess from 'chess.js';
 
 function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
-    console.log(roomCode);
-    console.log(connectedUsers);
-    //console.log(userId);
-    //console.log(initUser);
     const [currentRole, setCurrentRole] = useState(0);
     const [game, setGame] = useState(new Chess());
     const [legalFigures, setLegalFigures] = useState(['p', 'n']);
     const [legalMoves, setLegalMoves] = useState([]);
     const [chosenFigure, setChosenFigure] = useState('none');
-    console.log(myRole);
 
     const [isMoveMade, setIsMoveMade] = useState(false);
-    // [TODO]: zainicjalizowanie na startowy state 
-    // (zaczyna user white brain, szachownica jest pusta, etc)
-    const [gameState, setGameState] = useState(null);
 
     useEffect(() => {
         const socket = new WebSocket(`ws://localhost:8000/ws/hand_and_brain/${roomCode}/`);
@@ -26,23 +18,21 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
         socket.addEventListener('open', () => {
             if (isMoveMade) {
               const message = {
-                type: 'hand_choose_move',
-                fen: game.fen(),
-                current_role: currentRole,
+                type         : 'hand_choose_move',
+                fen          : game.fen(),
+                current_role : currentRole,
               };
-              console.log("Sending message:", message);
               socket.send(JSON.stringify(message));
               setIsMoveMade(false);
             }
         });
 
         const handleChooseFigure = (figure) => {
-            console.log(figure);
             const message = {
-                type: 'brain_choose_figure',
-                figure: figure,
-                fen: game.fen(),
-                current_role: currentRole,
+                type         : 'brain_choose_figure',
+                figure       : figure,
+                fen          : game.fen(),
+                current_role : currentRole,
             }
             socket.send(JSON.stringify(message));
         }
@@ -60,14 +50,12 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
 
         const handleMessage = (event) => {
             const data = JSON.parse(event.data).payload;
-            console.log(data);
             switch (data.event) {
                 case "brain_choose_figure":
                     console.log("case brain_choose_figure");
                     setCurrentRole(data.current_role);
                     console.log("new currentRole: " + currentRole);
                     console.log(data);
-                    console.log(data.current_role + " " + currentRole);
                     setLegalMoves(data.moves);
                     setChosenFigure(data.chosen_figure);
                     break;
@@ -151,7 +139,6 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
         });
 
         if (move === null) return false;
-        //console.log(currentRole);
         setIsMoveMade(true);
         return true;
     }
@@ -167,6 +154,8 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
                 <Chessboard position={game.fen()} onPieceDrop={onDrop} />
                 {game.fen()}
             </div>
+            
+            <br />
             
             <div className="container">
                 {currentRole === myRole ? <p>Your turn</p> : <p>Wait for your turn</p>}
