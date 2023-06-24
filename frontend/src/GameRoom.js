@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Chessboard } from 'react-chessboard';
 
 import Chess from 'chess.js';
@@ -150,13 +150,8 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
         return true;
     }
     
-    const buttonRef = useRef(null);
-    
     return (
         <div id="game-room-section" className="text-center">
-            <div style={{ display: 'none' }}>
-                <button ref={buttonRef} id="hand-move">Hand move</button>
-            </div>
             <div>
                 <Chessboard position={game.fen()} onPieceDrop={onDrop} boardOrientation={myRole < 2 ? 'white' : 'black'} />
                 {game.fen()}
