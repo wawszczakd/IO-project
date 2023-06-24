@@ -10,9 +10,9 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
     //console.log(initUser);
     const [currentRole, setCurrentRole] = useState(0);
     const [game, setGame] = useState(new Chess());
-    const [piece, setPiece] = useState(game.PAWN);
     const [legalFigures, setLegalFigures] = useState(['p', 'n']);
     const [legalMoves, setLegalMoves] = useState([]);
+    const [chosenFigure, setChosenFigure] = useState('none');
     console.log(myRole);
 
     const [isMoveMade, setIsMoveMade] = useState(false);
@@ -69,6 +69,7 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
                     console.log(data);
                     console.log(data.current_role + " " + currentRole);
                     setLegalMoves(data.moves);
+                    setChosenFigure(data.chosen_figure);
                     break;
                 case "hand_choose_move":
                     console.log("case hand_choose_move");
@@ -76,6 +77,7 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
                     console.log("new currentRole: " + currentRole);
                     console.log(data);
                     setLegalFigures(data.figures);
+                    setGame(new Chess(data.fen));
                     break;
                 default:
                     console.log("unknown event");
@@ -176,6 +178,11 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
                         {figure.toUpperCase()}
                         </button>
                     ))}
+                    </>
+                )}
+                {myRole % 2 === 1 && currentRole === myRole && (
+                    <>
+                    <p>Figure chosen by brain: {chosenFigure}</p>
                     </>
                 )}
             </div>

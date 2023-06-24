@@ -244,11 +244,12 @@ class HandAndBrainConsumer(AsyncWebsocketConsumer):
         moves = get_moves(fen, figure)
 
         response = {
-            'type'  : 'send_message',
-            "event" : "brain_choose_figure",
-            "moves" : moves,
-            "fen"   : fen,
-            "current_role" : (current_role+1)%4,
+            "type"          : "send_message",
+            "event"         : "brain_choose_figure",
+            "moves"         : moves,
+            "fen"           : fen,
+            "current_role"  : (current_role + 1) % 4,
+            "chosen_figure" : figure,
         }
 
         await self.channel_layer.group_send(
