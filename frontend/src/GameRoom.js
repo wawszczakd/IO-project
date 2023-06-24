@@ -29,6 +29,12 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
             }
         });
 
+    }, [isMoveMade]);
+
+
+    useEffect(() => {
+        const socket = new WebSocket(`ws://localhost:8000/ws/hand_and_brain/${roomCode}/`);
+
         const handleChooseFigure = (figure) => {
             const message = {
                 type         : 'brain_choose_figure',
@@ -56,20 +62,17 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
                 case "brain_choose_figure":
                     console.log("case brain_choose_figure");
                     setCurrentRole(data.current_role);
-                    //console.log("new currentRole: " + currentRole);
-                    //console.log(data);
                     setLegalMoves(data.moves);
                     setChosenFigure(data.chosen_figure);
                     break;
                 case "hand_choose_move":
                     console.log("case hand_choose_move");
                     setCurrentRole(data.current_role);
-                    //console.log("new currentRole: " + currentRole);
-                    //console.log(data);
                     setLegalFigures(data.figures);
                     setGame(new Chess(data.fen));
                     break;
                 case "game_finished":
+                    console.log("gra skończona");
                     setCurrentRole(4);
                     setGame(new Chess(data.fen));
                     setIsFinished(true);
@@ -118,7 +121,7 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
             socket.removeEventListener('message', handleMessage);
         }
 
-    }, [roomCode, userId, isMoveMade, game, myRole]);
+    }, [roomCode, userId, game, myRole]);
 
     function updateGame(modify) {
         setGame((g) => {
