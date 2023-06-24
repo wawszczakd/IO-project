@@ -54,16 +54,16 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
                 case "brain_choose_figure":
                     console.log("case brain_choose_figure");
                     setCurrentRole(data.current_role);
-                    console.log("new currentRole: " + currentRole);
-                    console.log(data);
+                    //console.log("new currentRole: " + currentRole);
+                    //console.log(data);
                     setLegalMoves(data.moves);
                     setChosenFigure(data.chosen_figure);
                     break;
                 case "hand_choose_move":
                     console.log("case hand_choose_move");
                     setCurrentRole(data.current_role);
-                    console.log("new currentRole: " + currentRole);
-                    console.log(data);
+                    //console.log("new currentRole: " + currentRole);
+                    //console.log(data);
                     setLegalFigures(data.figures);
                     setGame(new Chess(data.fen));
                     break;
@@ -151,7 +151,7 @@ function GameRoom({ roomCode, connectedUsers, userId, myRole }) {
                 <button ref={buttonRef} id="hand-move">Hand move</button>
             </div>
             <div>
-                <Chessboard position={game.fen()} onPieceDrop={onDrop} />
+                <Chessboard position={game.fen()} onPieceDrop={onDrop} boardOrientation={myRole < 2 ? 'white' : 'black'} />
                 {game.fen()}
             </div>
             
