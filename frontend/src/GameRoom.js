@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChessKing, faChessQueen, faChessRook, faChessBishop, faChessKnight, faChessPawn } from "@fortawesome/free-solid-svg-icons";
 import Chess from "chess.js";
 
-function GameRoom({ roomCode, userId, myTeam, myRole }) {
+function GameRoom({ roomCode, connectedUsers, userId, myTeam, myRole, roles }) {
     const [currentRole, setCurrentRole] = useState(0);
     const [game, setGame] = useState(new Chess());
     const [legalFigures, setLegalFigures] = useState(["p", "n"]);
@@ -61,6 +61,7 @@ function GameRoom({ roomCode, userId, myTeam, myRole }) {
                     setGame(new Chess(data.fen));
                     setIsFinished(true);
                     setFinishMessage(data.content);
+                    break;
                 default:
                     console.log("unknown event");
             }
@@ -143,47 +144,79 @@ function GameRoom({ roomCode, userId, myTeam, myRole }) {
     }
     
     return (
-        <div id="game-room-section" className="text-center">
-            <div>
+        <div className="conainer-fluid">
+        <div className="row">
+          <div className="col-1"></div>
+          
+          <div className="col-10">
+            <div id="game-room-section" className="text-center">
+              <div>
                 <Chessboard position={game.fen()} onPieceDrop={onDrop} boardOrientation={myRole < 2 ? "white" : "black"} />
-            </div>
-            
-            <br />
-            
-            <div className="container">
+              </div>
+              <br />
+              <div className="container-fluid">
                 {isFinished ? (
-                    <>
-                        <p>{finishMessage}</p>
-                    </>
+                  <>
+                    <p>{finishMessage}</p>
+                  </>
                 ) : (
-                    <>
-                        {currentRole === myRole ? (
-                            <p>Your turn</p>
-                        ) : (
-                            <p>Wait for your turn</p>
-                        )}
-                        {myRole % 2 === 0 && currentRole === myRole && (
-                            <>
-                                <p>Choose a figure:</p>
-                                {legalFigures.map((figure) => (
-                                    <button
-                                        className="btn btn-secondary"
-                                        id={`brain-choose-${figure}`}
-                                        key={figure} >
-                                        {mapSymbolToFigure(figure)}
-                                    </button>
-                                ))}
-                            </>
-                        )}
-                        {myRole % 2 === 1 && currentRole === myRole && (
-                            <>
-                                <p>Figure chosen by brain: <span style={{ backgroundColor: 'grey', padding: '2px', borderRadius: '4px' }}>{mapSymbolToFigure(chosenFigure)}</span></p>
-                            </>
-                        )}
-                    </>
+                  <>
+                    {currentRole === myRole ? (
+                      <p>Your turn</p>
+                    ) : (
+                      <p>Wait for your turn</p>
+                    )}
+                    {myRole % 2 === 0 && currentRole === myRole && (
+                      <>
+                        <p>Choose a figure:</p>
+                        {legalFigures.map((figure) => (
+                          <button
+                            className="btn btn-secondary"
+                            id={`brain-choose-${figure}`}
+                            key={figure}
+                          >
+                            {mapSymbolToFigure(figure)}
+                          </button>
+                        ))}
+                      </>
+                    )}
+                    {myRole % 2 === 1 && currentRole === myRole && (
+                      <>
+                        <p>
+                          Figure chosen by brain:{" "}
+                          <span
+                            style={{
+                              backgroundColor: "grey",
+                              padding: "2px",
+                              borderRadius: "4px",
+                            }}
+                          >
+                            {mapSymbolToFigure(chosenFigure)}
+                          </span>
+                        </p>
+                      </>
+                    )}
+                  </>
                 )}
+              </div>
             </div>
+          </div>
+          
+          <div className="col-1">
+            <div className="container-fluid text-center">
+              <p>Team 1</p>
+              Brain: {connectedUsers[roles["brain_1"]]["nickname"]} {myRole === 0 ? <>(You)</> : null}<br />
+              Hand: {connectedUsers[roles["hand_1"]]["nickname"]} {myRole === 1 ? <>(You)</> : null}<br />
+              <br />
+              <p>Team 2</p>
+              Brain: {connectedUsers[roles["brain_2"]]["nickname"]} {myRole === 2 ? <>(You)</> : null} <br />
+              Hand: {connectedUsers[roles["hand_2"]]["nickname"]} {myRole === 3 ? <>(You)</> : null} <br />
+              <br />
+            </div>
+          </div>
         </div>
+       </div>
+
     );
 }
 
