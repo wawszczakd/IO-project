@@ -175,9 +175,9 @@ function RoomView({ roomCode, nickname }) {
                 
                 {isGameRoomVisible && (
                     <GameRoom
-                        connectedUsers={connectedUsers}
                         roomCode={roomCode}
                         userId={userId}
+                        myTeam={connectedUsers[userId].team}
                         myRole={userId == roles["brain_1"] ? 0 : userId == roles["hand_1"]
                                 ? 1 : userId == roles["brain_2"] ? 2 : 3}
                     />

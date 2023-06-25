@@ -3,7 +3,7 @@ import { Chessboard } from "react-chessboard";
 
 import Chess from "chess.js";
 
-function GameRoom({ roomCode, userId, myRole }) {
+function GameRoom({ roomCode, userId, myTeam, myRole }) {
     const [currentRole, setCurrentRole] = useState(0);
     const [game, setGame] = useState(new Chess());
     const [legalFigures, setLegalFigures] = useState(["p", "n"]);
@@ -46,19 +46,16 @@ function GameRoom({ roomCode, userId, myRole }) {
             const data = JSON.parse(event.data).payload;
             switch (data.event) {
                 case "brain_choose_figure":
-                    console.log("case brain_choose_figure");
                     setCurrentRole(data.current_role);
                     setLegalMoves(data.moves);
                     setChosenFigure(data.chosen_figure);
                     break;
                 case "hand_choose_move":
-                    console.log("case hand_choose_move");
                     setCurrentRole(data.current_role);
                     setLegalFigures(data.figures);
                     setGame(new Chess(data.fen));
                     break;
                 case "game_finished":
-                    console.log("gra skończona");
                     setCurrentRole(4);
                     setGame(new Chess(data.fen));
                     setIsFinished(true);
@@ -133,6 +130,15 @@ function GameRoom({ roomCode, userId, myRole }) {
         return true;
     }
     
+    function mapSymbolToFigure(symbol) {
+        if      (symbol == "k") return (myTeam == 1 ? "♚" : "♔");
+        else if (symbol == "q") return (myTeam == 1 ? "♛" : "♕");
+        else if (symbol == "r") return (myTeam == 1 ? "♜" : "♖");
+        else if (symbol == "b") return (myTeam == 1 ? "♝" : "♗");
+        else if (symbol == "n") return (myTeam == 1 ? "♞" : "♘");
+        else                    return (myTeam == 1 ? "♟" : "♙");
+    }
+    
     return (
         <div id="game-room-section" className="text-center">
             <div>
@@ -161,14 +167,14 @@ function GameRoom({ roomCode, userId, myRole }) {
                                         className="btn btn-secondary"
                                         id={`brain-choose-${figure}`}
                                         key={figure} >
-                                        {figure.toUpperCase()}
+                                        {mapSymbolToFigure(figure)}
                                     </button>
                                 ))}
                             </>
                         )}
                         {myRole % 2 === 1 && currentRole === myRole && (
                             <>
-                                <p>Figure chosen by brain: {chosenFigure}</p>
+                                <p>Figure chosen by brain: {mapSymbolToFigure(chosenFigure)}</p>
                             </>
                         )}
                     </>
