@@ -8,85 +8,79 @@ function RoomView({ roomCode, nickname }) {
     const [isLobbyVisible, setLobbyVisible] = useState(true);
     const [isGameRoomVisible, setGameRoomVisible] = useState(false);
     const [roles, setRoles] = useState(false);
-
+    
     useEffect(() => {
         const socket = new WebSocket(`ws://localhost:8000/ws/room/${roomCode}/`);
-
+        
         const handleOpen = () => {
             console.log("Connected to socket");
             if (userId == null) {
                 console.log("Sending new-user msg");
                 const message = {
-                    type: 'user_joined',
-                    nickname: nickname,
+                    type     : "user_joined",
+                    nickname : nickname,
                 };
                 socket.send(JSON.stringify(message));
             }
         };
-
-        const handleChangeTeam = (newTeam) => {
-            console.log("changing to team " + newTeam);
+        
+        const handleChangeTeam = () => {
+            const newTeam = (connectedUsers[userId].team == 1 ? 2 : 1);
             const message = {
-                type: 'team_changed',
-                user_id: userId,
-                new_team: newTeam,
+                type     : "team_changed",
+                user_id  : userId,
+                new_team : newTeam,
             };
             socket.send(JSON.stringify(message));
         };
-
-        const handleChangeRole = (newRole) => {
+        
+        const handleChangeRole = () => {
+            const newRole = (connectedUsers[userId].role == "brain" ? "hand" : "brain");
             const message = {
-                type: 'role_changed',
-                user_id: userId,
-                new_role: newRole,
+                type     : "role_changed",
+                user_id  : userId,
+                new_role : newRole,
             };
             socket.send(JSON.stringify(message));
         }
-
-        const handleChangeTeam1 = () => handleChangeTeam(1);
-        const handleChangeTeam2 = () => handleChangeTeam(2);
-        const handleSwitchToHand = () => handleChangeRole("hand");
-        const handleSwitchToBrain = () => handleChangeRole("brain");
-
+        
         const handleClose = () => {
             console.log("Disconnected from socket");
         };
-
+        
         const handleStartGame = () => {
             const message = {
-                type: 'start_game',
-                user_id: userId,
+                type    : "start_game",
+                user_id : userId,
             };
             socket.send(JSON.stringify(message));
         }
-
+        
         const handleBeforeunload = () => {
             if (userId != null) {
                 const message = {
-                    type: 'user_left',
-                    user_id: userId,
+                    type    : "user_left",
+                    user_id : userId,
                 };
                 socket.send(JSON.stringify(message));
             }
         }
-
+        
         const handleMessage = (event) => {
             const data = JSON.parse(event.data).payload;
             switch (data.event) {
-                case 'connected_users':
+                case "connected_users":
                     setConnectedUsers(data.connected_users);
                     setOwnerId(data.owner_id);
                     if (userId == null)
                         setUserId(data.new_id);
-
                     break;
-                case 'start_game':
+                case "start_game":
                     setGameRoomVisible(true);
                     setLobbyVisible(false);
-                    console.log(data.roles);
                     setRoles(data.roles);
                     break;
-                case 'failed_start':
+                case "failed_start":
                     if (data.userId == userId) {
                         alert(data.content);
                     }
@@ -95,42 +89,31 @@ function RoomView({ roomCode, nickname }) {
                     break;
             }
         }
-
-        const join_team_1_btn = document.getElementById("join-team-1-btn");
-        const join_team_2_btn = document.getElementById("join-team-2-btn");
-        const switch_to_hand_btn = document.getElementById("switch-to-hand-btn");
-        const switch_to_brain_btn = document.getElementById("switch-to-brain-btn");
+        
+        const change_team_btn = document.getElementById("change-team-btn");
+        const change_role_btn = document.getElementById("change-role-btn");
         const start_game_btn = document.getElementById("start-game-btn");
-
-        start_game_btn.addEventListener('click', handleStartGame);
-        join_team_1_btn.addEventListener('click', handleChangeTeam1);
-        join_team_2_btn.addEventListener('click', handleChangeTeam2);
-        switch_to_hand_btn.addEventListener('click', handleSwitchToHand);
-        switch_to_brain_btn.addEventListener('click', handleSwitchToBrain);
-        window.addEventListener('beforeunload', handleBeforeunload);
-        socket.addEventListener('open', handleOpen);
-        socket.addEventListener('close', handleClose);
-        socket.addEventListener('message', handleMessage);
-
+        
+        start_game_btn.addEventListener("click", handleStartGame);
+        change_team_btn.addEventListener("click", handleChangeTeam);
+        change_role_btn.addEventListener("click", handleChangeRole);
+        window.addEventListener("beforeunload", handleBeforeunload);
+        socket.addEventListener("open", handleOpen);
+        socket.addEventListener("close", handleClose);
+        socket.addEventListener("message", handleMessage);
+        
         return () => {
-            start_game_btn.removeEventListener('click', handleStartGame);
-            join_team_1_btn.removeEventListener('click', handleChangeTeam1);
-            join_team_2_btn.removeEventListener('click', handleChangeTeam2);
-            switch_to_hand_btn.removeEventListener('click', handleSwitchToHand);
-            switch_to_brain_btn.removeEventListener('click', handleSwitchToBrain);
-            window.removeEventListener('beforeunload', handleBeforeunload);
-            socket.removeEventListener('open', handleOpen);
-            socket.removeEventListener('close', handleClose);
-            socket.removeEventListener('message', handleMessage);
+            start_game_btn.removeEventListener("click", handleStartGame);
+            change_team_btn.removeEventListener("click", handleChangeTeam);
+            change_role_btn.removeEventListener("click", handleChangeRole);
+            window.removeEventListener("beforeunload", handleBeforeunload);
+            socket.removeEventListener("open", handleOpen);
+            socket.removeEventListener("close", handleClose);
+            socket.removeEventListener("message", handleMessage);
             socket.close();
         }
-    }, [nickname, roomCode, userId]);
-
-    // const handleStartGame = () => {
-    //     setGameRoomVisible(true);
-    //     setLobbyVisible(false);
-    // };
-
+    }, [nickname, roomCode, userId, connectedUsers]);
+    
     return (
         <div id="join-room-section" className="text-center">
             <div className="container">
@@ -172,46 +155,31 @@ function RoomView({ roomCode, nickname }) {
                                 Leave Room
                             </button>
                         </div>
-
+                        
                         <button
                             type="button"
                             className="btn btn-primary mx-3"
-                            id="join-team-1-btn"
+                            id="change-team-btn"
                         >
-                            Join team 1
+                            Change team
                         </button>
                         <button
                             type="button"
                             className="btn btn-primary mx-3"
-                            id="join-team-2-btn"
+                            id="change-role-btn"
                         >
-                            Join team 2
-                        </button>
-
-                        <button
-                            type="button"
-                            className="btn btn-primary mx-3"
-                            id="switch-to-hand-btn"
-                        >
-                            Switch to hand
-                        </button>
-                        <button
-                            type="button"
-                            className="btn btn-primary mx-3"
-                            id="switch-to-brain-btn"
-                        >
-                            Switch to brain
+                            Change role
                         </button>
                     </div>
                 )}
-
+                
                 {isGameRoomVisible && (
                     <GameRoom
                         connectedUsers={connectedUsers}
                         roomCode={roomCode}
                         userId={userId}
-                        myRole={userId == roles['brain_1'] ? 0 : userId == roles['hand_1']
-                                ? 1 : userId == roles['brain_2'] ? 2 : 3}
+                        myRole={userId == roles["brain_1"] ? 0 : userId == roles["hand_1"]
+                                ? 1 : userId == roles["brain_2"] ? 2 : 3}
                     />
                 )}
             </div>
