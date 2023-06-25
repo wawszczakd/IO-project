@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Chessboard } from "react-chessboard";
-
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faChessKing, faChessQueen, faChessRook, faChessBishop, faChessKnight, faChessPawn } from "@fortawesome/free-solid-svg-icons";
 import Chess from "chess.js";
 
 function GameRoom({ roomCode, userId, myTeam, myRole }) {
@@ -131,12 +132,14 @@ function GameRoom({ roomCode, userId, myTeam, myRole }) {
     }
     
     function mapSymbolToFigure(symbol) {
-        if      (symbol == "k") return (myTeam == 1 ? "♚" : "♔");
-        else if (symbol == "q") return (myTeam == 1 ? "♛" : "♕");
-        else if (symbol == "r") return (myTeam == 1 ? "♜" : "♖");
-        else if (symbol == "b") return (myTeam == 1 ? "♝" : "♗");
-        else if (symbol == "n") return (myTeam == 1 ? "♞" : "♘");
-        else                    return (myTeam == 1 ? "♟" : "♙");
+        const color = myTeam === 1 ? 'white' : 'black';
+        
+        if      (symbol === "k") return <FontAwesomeIcon icon={faChessKing} style={{ color }} />;
+        else if (symbol === "q") return <FontAwesomeIcon icon={faChessQueen} style={{ color }} />;
+        else if (symbol === "r") return <FontAwesomeIcon icon={faChessRook} style={{ color }} />;
+        else if (symbol === "b") return <FontAwesomeIcon icon={faChessBishop} style={{ color }} />;
+        else if (symbol === "n") return <FontAwesomeIcon icon={faChessKnight} style={{ color }} />;
+        else                     return <FontAwesomeIcon icon={faChessPawn} style={{ color }} />;
     }
     
     return (
@@ -174,7 +177,7 @@ function GameRoom({ roomCode, userId, myTeam, myRole }) {
                         )}
                         {myRole % 2 === 1 && currentRole === myRole && (
                             <>
-                                <p>Figure chosen by brain: {mapSymbolToFigure(chosenFigure)}</p>
+                                <p>Figure chosen by brain: <span style={{ backgroundColor: 'grey', padding: '2px', borderRadius: '4px' }}>{mapSymbolToFigure(chosenFigure)}</span></p>
                             </>
                         )}
                     </>
