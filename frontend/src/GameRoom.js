@@ -128,12 +128,12 @@ function GameRoom({ roomCode, userId, myTeam, myRole, connectedUsers, roles }) {
     function mapSymbolToFigure(symbol) {
         const color = myTeam === 1 ? 'white' : 'black';
         
-        if      (symbol === "k") return <FontAwesomeIcon icon={faChessKing} style={{ color }} />;
-        else if (symbol === "q") return <FontAwesomeIcon icon={faChessQueen} style={{ color }} />;
-        else if (symbol === "r") return <FontAwesomeIcon icon={faChessRook} style={{ color }} />;
-        else if (symbol === "b") return <FontAwesomeIcon icon={faChessBishop} style={{ color }} />;
-        else if (symbol === "n") return <FontAwesomeIcon icon={faChessKnight} style={{ color }} />;
-        else                     return <FontAwesomeIcon icon={faChessPawn} style={{ color }} />;
+        if      (symbol === "k") return <FontAwesomeIcon icon={faChessKing} style={{ color }} size="4x" />;
+        else if (symbol === "q") return <FontAwesomeIcon icon={faChessQueen} style={{ color }} size="4x" />;
+        else if (symbol === "r") return <FontAwesomeIcon icon={faChessRook} style={{ color }}  size="4x"/>;
+        else if (symbol === "b") return <FontAwesomeIcon icon={faChessBishop} style={{ color }}  size="4x"/>;
+        else if (symbol === "n") return <FontAwesomeIcon icon={faChessKnight} style={{ color }} size="4x"/>;
+        else                     return <FontAwesomeIcon icon={faChessPawn} style={{ color }}  size="4x"/>;
     }
     
     return (
@@ -257,7 +257,8 @@ function GameRoom({ roomCode, userId, myTeam, myRole, connectedUsers, roles }) {
                         )}
                         {myRole % 2 === 1 && currentRole === myRole && (
                             <>
-                                <p>Figure chosen by brain: <span style={{ backgroundColor: 'grey', padding: '2px', borderRadius: '4px' }}>{mapSymbolToFigure(chosenFigure)}</span></p>
+                                <p>Figure chosen by brain: <br /> <span style={{ display: "inline-flex", alignItems: "center", backgroundColor: "grey", 
+                                            padding: "2px", borderRadius: "4px", }} >{mapSymbolToFigure(chosenFigure)}</span></p>
                             </>
                         )}
                     </>
