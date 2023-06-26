@@ -87,5 +87,18 @@ Go to `localhost:3000` to see the main site.
 
 # Project demo
 
++ Main site
 
+![Main site](./images/main_site.png)
 
++ Room view
+
+![Room view](./images/room_view.png)
+
++ Hand's turn
+
+![Hand turn](./images/hand_move.png)
+
++ Brain's turn
+
+![Brain turn](./images/brain_move.png)
