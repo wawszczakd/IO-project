@@ -155,7 +155,6 @@ class RoomConsumer(AsyncWebsocketConsumer):
 
         users = self.users[self.room_group_name]
 
-        print(users)
         team1, team2 = [], [] 
         
         for id in users:
