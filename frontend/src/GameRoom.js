@@ -140,25 +140,43 @@ function GameRoom({ roomCode, userId, myTeam, myRole, connectedUsers, roles }) {
         <div id="game-room-section" className="text-center">
             <div className="row">
                 <div className="col-3">
-                    <p>Team 1</p>
-                    {currentRole === 0 ? (
-                        <div className="rounded text-success">
-                            Brain: {connectedUsers[roles["brain_1"]].nickname} {myRole === 0 && <>(You)</>} <br />
-                        </div>
-                    ) : (
-                        <div className="rounded text-danger">
-                            Brain: {connectedUsers[roles["brain_1"]].nickname} {myRole === 0 && <>(You)</>} <br />
-                        </div>
-                    )}
-                    {currentRole === 1 ? (
-                        <div className="rounded text-success">
-                            Hand: {connectedUsers[roles["hand_1"]].nickname} {myRole === 1 && <>(You)</>} <br />
-                        </div>
-                    ) : (
-                        <div className="rounded text-danger">
-                            Hand: {connectedUsers[roles["hand_1"]].nickname} {myRole === 1 && <>(You)</>} <br />
-                        </div>
-                    )}
+                    <table className="table table-dark">
+                        <thead>
+                            <tr>
+                                <th>
+                                    Team 1
+                                </th>
+                            </tr>    
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    {currentRole === 0 ? (
+                                        <div className="rounded text-success">
+                                            Brain: {connectedUsers[roles["brain_1"]].nickname} {myRole === 0 && <>(You)</>} <br />
+                                        </div>
+                                    ) : (
+                                        <div className="rounded">
+                                            Brain: {connectedUsers[roles["brain_1"]].nickname} {myRole === 0 && <>(You)</>} <br />
+                                        </div>
+                                    )}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                    {currentRole === 1 ? (
+                                        <div className="rounded text-success">
+                                            Hand: {connectedUsers[roles["hand_1"]].nickname} {myRole === 1 && <>(You)</>} <br />
+                                        </div>
+                                    ) : (
+                                        <div className="rounded">
+                                            Hand: {connectedUsers[roles["hand_1"]].nickname} {myRole === 1 && <>(You)</>} <br />
+                                        </div>
+                                    )}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
                     <div className="col-6">
                         <div className="container-fluid text-center">
@@ -168,25 +186,43 @@ function GameRoom({ roomCode, userId, myTeam, myRole, connectedUsers, roles }) {
                         </div>
                     </div>
                 <div className="col-3">
-                    <p>Team 2</p>
-                    {currentRole === 2 ? (
-                        <div className="rounded text-success">
-                            Brain: {connectedUsers[roles["brain_2"]].nickname} {myRole === 2 && <>(You)</>} <br />
-                        </div>
-                    ) : (
-                        <div className="rounded text-danger">
-                            Brain: {connectedUsers[roles["brain_2"]].nickname} {myRole === 2 && <>(You)</>} <br />
-                        </div>
-                    )}
-                    {currentRole === 3 ? (
-                        <div className="rounded text-success">
-                            Hand: {connectedUsers[roles["hand_2"]].nickname} {myRole === 3 && <>(You)</>} <br />
-                        </div>
-                    ) : (
-                        <div className="rounded text-danger">
-                            Hand: {connectedUsers[roles["hand_2"]].nickname} {myRole === 3 && <>(You)</>} <br />
-                        </div>
-                    )}
+                <table className="table table-dark">
+                    <thead>
+                        <tr>
+                            <th>
+                                Team 2
+                            </th>
+                        </tr>    
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                {currentRole === 2 ? (
+                                    <div className="rounded text-success">
+                                        Brain: {connectedUsers[roles["brain_2"]].nickname} {myRole === 2 && <>(You)</>} <br />
+                                    </div>
+                                ) : (
+                                    <div className="rounded">
+                                        Brain: {connectedUsers[roles["brain_2"]].nickname} {myRole === 2 && <>(You)</>} <br />
+                                    </div>
+                                )}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                {currentRole === 3 ? (
+                                    <div className="rounded text-success">
+                                        Hand: {connectedUsers[roles["hand_2"]].nickname} {myRole === 3 && <>(You)</>} <br />
+                                    </div>
+                                ) : (
+                                    <div className="rounded">
+                                        Hand: {connectedUsers[roles["hand_2"]].nickname} {myRole === 3 && <>(You)</>} <br />
+                                    </div>
+                                )}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
                 </div>
             </div>
             <br />
