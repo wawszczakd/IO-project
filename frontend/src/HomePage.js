@@ -153,16 +153,15 @@ function HomePage() {
                             <strong>Error:</strong> Nickname cannot be empty.
                         </div>
                     )}
-
-                    {isRoomVisible && (
+                </div>
+            </div>
+            {isRoomVisible && (
                         <RoomView
                             roomCode={roomCode}
                             nickname={nickname}
                             socket={socket}
                         />
                     )}
-                </div>
-            </div>
         </div>
     );
 }
