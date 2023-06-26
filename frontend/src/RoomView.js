@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import GameRoom from "./GameRoom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCrown } from "@fortawesome/free-solid-svg-icons"
 
 function RoomView({ roomCode, nickname }) {
     const [connectedUsers, setConnectedUsers] = useState({});
@@ -11,11 +13,9 @@ function RoomView({ roomCode, nickname }) {
     
     useEffect(() => {
         const socket = new WebSocket(`ws://localhost:8000/ws/room/${roomCode}/`);
-        
+
         const handleOpen = () => {
-            console.log("Connected to socket");
             if (userId == null) {
-                console.log("Sending new-user msg");
                 const message = {
                     type     : "user_joined",
                     nickname : nickname,
@@ -43,10 +43,6 @@ function RoomView({ roomCode, nickname }) {
             };
             socket.send(JSON.stringify(message));
         }
-        
-        const handleClose = () => {
-            console.log("Disconnected from socket");
-        };
         
         const handleStartGame = () => {
             const message = {
@@ -94,21 +90,23 @@ function RoomView({ roomCode, nickname }) {
         const change_role_btn = document.getElementById("change-role-btn");
         const start_game_btn = document.getElementById("start-game-btn");
         
-        start_game_btn.addEventListener("click", handleStartGame);
+        if (start_game_btn != null)
+            start_game_btn.addEventListener("click", handleStartGame);
+        
         change_team_btn.addEventListener("click", handleChangeTeam);
         change_role_btn.addEventListener("click", handleChangeRole);
         window.addEventListener("beforeunload", handleBeforeunload);
         socket.addEventListener("open", handleOpen);
-        socket.addEventListener("close", handleClose);
         socket.addEventListener("message", handleMessage);
         
         return () => {
-            start_game_btn.removeEventListener("click", handleStartGame);
+            if (start_game_btn != null)
+                start_game_btn.removeEventListener("click", handleStartGame);
+
             change_team_btn.removeEventListener("click", handleChangeTeam);
             change_role_btn.removeEventListener("click", handleChangeRole);
             window.removeEventListener("beforeunload", handleBeforeunload);
             socket.removeEventListener("open", handleOpen);
-            socket.removeEventListener("close", handleClose);
             socket.removeEventListener("message", handleMessage);
             socket.close();
         }
@@ -120,25 +118,33 @@ function RoomView({ roomCode, nickname }) {
                 {isLobbyVisible && (
                     <div id="join-room-section" className="text-center">
                         <h2 className="text-center">Room: {roomCode}</h2>
+                        <br />
                         <div className="row">
-                            <div className="col-sm-6">Team 1</div>
-                            <ul>
-                                {Object.keys(connectedUsers).map((key, index) => {
-                                    return connectedUsers[key].team === 1
-                                        ? <li key={index}>{connectedUsers[key].nickname + " (" + connectedUsers[key].role + ")" + (ownerId == key ? " (owner)" : "")}</li>
-                                        : null
-                                })}
-                            </ul>
-                            <div className="col-sm-6">Team 2</div>
-                            <ul>
-                                {Object.keys(connectedUsers).map((key, index) => {
-                                    return connectedUsers[key].team === 2
-                                        ? <li key={index}>{connectedUsers[key].nickname + " (" + connectedUsers[key].role + ")" + (ownerId == key ? " (owner)" : "")}</li>
-                                        : null
-                                })}
-                            </ul>
+                            <div className="col-sm-6">
+                                <h4>Team 1</h4>
+                                <br />
+                                <ul className="list-unstyled">
+                                    {Object.keys(connectedUsers).map((key, index) => {
+                                        return connectedUsers[key].team === 1
+                                            ? <li key={index}>{ownerId == key && <FontAwesomeIcon icon={faCrown} />} {connectedUsers[key].nickname + " (" + connectedUsers[key].role + ")"}</li>
+                                            : null
+                                    })}
+                                </ul>
+                            </div>
+                            <div className="col-sm-6">
+                                <h4>Team 2</h4>
+                                <br />
+                                <ul className="list-unstyled">
+                                    {Object.keys(connectedUsers).map((key, index) => {
+                                        return connectedUsers[key].team === 2
+                                            ? <li key={index}>{ownerId == key && <FontAwesomeIcon icon={faCrown} />} {connectedUsers[key].nickname + " (" + connectedUsers[key].role + ")"}</li>
+                                            : null
+                                    })}
+                                </ul>
+                            </div>
                         </div>
-                        <div className="text-center">
+                        <br /><br />
+                        {userId != null && ownerId === userId &&
                             <button
                                 type="button"
                                 className="btn btn-success mx-3"
@@ -146,16 +152,15 @@ function RoomView({ roomCode, nickname }) {
                             >
                                 Start Game
                             </button>
-                            <button
-                                type="button"
-                                className="btn btn-danger mx-3"
-                                id="leave-room-btn"
-                                onClick={() => window.location.reload(false)}
-                            >
-                                Leave Room
-                            </button>
-                        </div>
-                        
+                        }
+                        <button
+                            type="button"
+                            className="btn btn-danger mx-3"
+                            id="leave-room-btn"
+                            onClick={() => window.location.reload(false)}
+                        >
+                            Leave Room
+                        </button>
                         <button
                             type="button"
                             className="btn btn-primary mx-3"

@@ -13,25 +13,18 @@ function GameRoom({ roomCode, userId, myTeam, myRole, connectedUsers, roles }) {
     const [isFinished, setIsFinished] = useState(false);
     const [finishMessage, setFinishMessage] = useState("");
     const [isMoveMade, setIsMoveMade] = useState(false);
+    const [socket, setSocket] = useState(new WebSocket(`ws://localhost:8000/ws/hand_and_brain/${roomCode}/`));
     
     useEffect(() => {
-        const socket = new WebSocket(`ws://localhost:8000/ws/hand_and_brain/${roomCode}/`);
-        
-        socket.addEventListener("open", () => {
-            if (isMoveMade) {
-                const message = {
-                    type         : "hand_choose_move",
-                    fen          : game.fen(),
-                    current_role : currentRole,
-                };
-                socket.send(JSON.stringify(message));
-                setIsMoveMade(false);
-            }
-        });
-    }, [isMoveMade]);
-    
-    useEffect(() => {
-        const socket = new WebSocket(`ws://localhost:8000/ws/hand_and_brain/${roomCode}/`);
+        if (isMoveMade) {
+            const message = {
+                type         : "hand_choose_move",
+                fen          : game.fen(),
+                current_role : currentRole,
+            };
+            socket.send(JSON.stringify(message));
+            setIsMoveMade(false);
+        }
         
         const handleChooseFigure = (figure) => {
             const message = {
@@ -61,6 +54,7 @@ function GameRoom({ roomCode, userId, myTeam, myRole, connectedUsers, roles }) {
                     setGame(new Chess(data.fen));
                     setIsFinished(true);
                     setFinishMessage(data.content);
+                    break;
                 default:
                     console.log("unknown event");
             }
@@ -99,7 +93,7 @@ function GameRoom({ roomCode, userId, myTeam, myRole, connectedUsers, roles }) {
             
             socket.removeEventListener("message", handleMessage);
         }
-    }, [roomCode, userId, game, myRole]);
+    }, [roomCode, userId, game, myRole, currentRole, isMoveMade, socket]);
     
     function updateGame(modify) {
         setGame((g) => {
@@ -207,7 +201,10 @@ function GameRoom({ roomCode, userId, myTeam, myRole, connectedUsers, roles }) {
                         {currentRole === myRole ? (
                             <p>Your turn</p>
                         ) : (
-                            <p>Wait for your turn</p>
+                            <div>
+                                <div class="spinner-border"></div>
+                                <p>Wait for your turn</p>
+                            </div>
                         )}
                         {myRole % 2 === 0 && currentRole === myRole && (
                             <>
