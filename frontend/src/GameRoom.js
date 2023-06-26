@@ -132,7 +132,7 @@ function GameRoom({ roomCode, userId, myTeam, myRole, connectedUsers, roles }) {
         else if (symbol === "q") return <FontAwesomeIcon icon={faChessQueen} style={{ color }} size="4x" />;
         else if (symbol === "r") return <FontAwesomeIcon icon={faChessRook} style={{ color }}  size="4x"/>;
         else if (symbol === "b") return <FontAwesomeIcon icon={faChessBishop} style={{ color }}  size="4x"/>;
-        else if (symbol === "n") return <FontAwesomeIcon icon={faChessKnight} style={{ color }}  size="4x"/>;
+        else if (symbol === "n") return <FontAwesomeIcon icon={faChessKnight} style={{ color }} size="4x"/>;
         else                     return <FontAwesomeIcon icon={faChessPawn} style={{ color }}  size="4x"/>;
     }
     
@@ -221,7 +221,8 @@ function GameRoom({ roomCode, userId, myTeam, myRole, connectedUsers, roles }) {
                         )}
                         {myRole % 2 === 1 && currentRole === myRole && (
                             <>
-                                <p>Figure chosen by brain: <span style={{ backgroundColor: 'grey', padding: '2px', borderRadius: '4px' }}>{mapSymbolToFigure(chosenFigure)}</span></p>
+                                <p>Figure chosen by brain: <br /> <span style={{ display: "inline-flex", alignItems: "center", backgroundColor: "grey", 
+                                            padding: "2px", borderRadius: "4px", }} >{mapSymbolToFigure(chosenFigure)}</span></p>
                             </>
                         )}
                     </>
