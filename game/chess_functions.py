@@ -21,12 +21,3 @@ def get_legal_moves(fen):
 	for move in board.legal_moves:
 		moves.append(move.uci())
 	return moves
-
-print(get_legal_moves("rnbq1bnQ/pppp2p1/5k2/4pP2/8/8/PPPP1PPP/RNB1KBNR w KQ - 1 6"))
-
-
-# fen = "rnbq1bnQ/pppp2p1/5k2/4pP2/8/8/PPPP1PPP/RNB1KBNR w KQ - 1 6"
-
-# board = chess.Board(fen)
-
-# print(board)
