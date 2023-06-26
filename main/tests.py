@@ -29,3 +29,20 @@ class UserModelTest(TestCase):
         nickname = "JohnDoe"
         user = User.objects.create(nickname=nickname)
         self.assertEqual(str(user), nickname)
+
+class MainMenuConsumerTest(TestCase):
+    async def test_create_room(self):
+        communicator = WebsocketCommunicator(MainMenuConsumer.as_asgi(), "/ws/")
+        connected, _ = await communicator.connect()
+
+        await communicator.send_json_to({
+            "type": "create_room",
+            "payload": "ROOMCODE123"
+        })
+
+        response_data= await communicator.receive_json_from()
+
+        self.assertEqual(response_data["type"], "room_created")
+        self.assertEqual(response_data["payload"]["room_code"], "ROOMCODE123")
+
+        await communicator.disconnect()
