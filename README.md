@@ -1,5 +1,12 @@
-# Projekt_IO
+# IO Project
 <!--  ![example workflow](https://github.com/jdziura/Projekt_IO/actions/workflows/django.yml/badge.svg) -->
+
+
+## Table of Contents
+- [Project Description](#project-description)
+- [Technologies used](#technologies-used)
+- [How to run the project](#how-to-run-the-project)
+- [Project demo](#project-demo)
 
 ## Project Description
 
@@ -28,8 +35,13 @@ Please note that this is still an early version of the project, and it may be fu
 
 ![Django](https://img.shields.io/badge/django-%23092E20.svg?style=for-the-badge&logo=django&logoColor=white)
 
+![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E)
+
 ![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
 
+![Bootstrap](https://img.shields.io/badge/bootstrap-%238511FA.svg?style=for-the-badge&logo=bootstrap&logoColor=white)
+
+![SQLite](https://img.shields.io/badge/sqlite-%2307405e.svg?style=for-the-badge&logo=sqlite&logoColor=white)
 
 ## How to run the project
 
@@ -73,5 +85,20 @@ Open another one and type:
 
 Go to `localhost:3000` to see the main site.
 
-# TODO: screenshots
+# Project demo
 
++ Main site
+
+![Main site](./images/main_site.png)
+
++ Room view
+
+![Room view](./images/room_view.png)
+
++ Hand's turn
+
+![Hand turn](./images/hand_move.png)
+
++ Brain's turn
+
+![Brain turn](./images/brain_move.png)
