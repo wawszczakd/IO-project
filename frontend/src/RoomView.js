@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import GameRoom from "./GameRoom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCrown } from "@fortawesome/free-solid-svg-icons"
 
 function RoomView({ roomCode, nickname }) {
     const [connectedUsers, setConnectedUsers] = useState({});
@@ -116,44 +118,49 @@ function RoomView({ roomCode, nickname }) {
                 {isLobbyVisible && (
                     <div id="join-room-section" className="text-center">
                         <h2 className="text-center">Room: {roomCode}</h2>
+                        <br />
                         <div className="row">
-                            <div className="col-sm-6">Team 1</div>
-                            <ul>
-                                {Object.keys(connectedUsers).map((key, index) => {
-                                    return connectedUsers[key].team === 1
-                                        ? <li key={index}>{connectedUsers[key].nickname + " (" + connectedUsers[key].role + ")" + (ownerId == key ? " (owner)" : "")}</li>
-                                        : null
-                                })}
-                            </ul>
-                            <div className="col-sm-6">Team 2</div>
-                            <ul>
-                                {Object.keys(connectedUsers).map((key, index) => {
-                                    return connectedUsers[key].team === 2
-                                        ? <li key={index}>{connectedUsers[key].nickname + " (" + connectedUsers[key].role + ")" + (ownerId == key ? " (owner)" : "")}</li>
-                                        : null
-                                })}
-                            </ul>
+                            <div className="col-sm-6">
+                                <h4>Team 1</h4>
+                                <br />
+                                <ul className="list-unstyled">
+                                    {Object.keys(connectedUsers).map((key, index) => {
+                                        return connectedUsers[key].team === 1
+                                            ? <li key={index}>{ownerId == key && <FontAwesomeIcon icon={faCrown} />} {connectedUsers[key].nickname + " (" + connectedUsers[key].role + ")"}</li>
+                                            : null
+                                    })}
+                                </ul>
+                            </div>
+                            <div className="col-sm-6">
+                                <h4>Team 2</h4>
+                                <br />
+                                <ul className="list-unstyled">
+                                    {Object.keys(connectedUsers).map((key, index) => {
+                                        return connectedUsers[key].team === 2
+                                            ? <li key={index}>{ownerId == key && <FontAwesomeIcon icon={faCrown} />} {connectedUsers[key].nickname + " (" + connectedUsers[key].role + ")"}</li>
+                                            : null
+                                    })}
+                                </ul>
+                            </div>
                         </div>
-                        <div className="text-center">
-                            {userId != null && ownerId === userId &&
-                                <button
-                                    type="button"
-                                    className="btn btn-success mx-3"
-                                    id="start-game-btn"
-                                >
-                                    Start Game
-                                </button>
-                            }
+                        <br /><br />
+                        {userId != null && ownerId === userId &&
                             <button
                                 type="button"
-                                className="btn btn-danger mx-3"
-                                id="leave-room-btn"
-                                onClick={() => window.location.reload(false)}
+                                className="btn btn-success mx-3"
+                                id="start-game-btn"
                             >
-                                Leave Room
+                                Start Game
                             </button>
-                        </div>
-                        
+                        }
+                        <button
+                            type="button"
+                            className="btn btn-danger mx-3"
+                            id="leave-room-btn"
+                            onClick={() => window.location.reload(false)}
+                        >
+                            Leave Room
+                        </button>
                         <button
                             type="button"
                             className="btn btn-primary mx-3"

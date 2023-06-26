@@ -154,7 +154,10 @@ function GameRoom({ roomCode, userId, myTeam, myRole }) {
                         {currentRole === myRole ? (
                             <p>Your turn</p>
                         ) : (
-                            <p>Wait for your turn</p>
+                            <div>
+                                <div class="spinner-border"></div>
+                                <p>Wait for your turn</p>
+                            </div>
                         )}
                         {myRole % 2 === 0 && currentRole === myRole && (
                             <>

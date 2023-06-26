@@ -112,6 +112,7 @@ function HomePage() {
                                     onChange={handleNicknameChange}
                                 />
                             </div>
+                            <br />
                             <div className="text-center">
                                 <button
                                     type="button"
