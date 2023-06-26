@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChessKing, faChessQueen, faChessRook, faChessBishop, faChessKnight, faChessPawn } from "@fortawesome/free-solid-svg-icons";
 import Chess from "chess.js";
 
-function GameRoom({ roomCode, userId, myTeam, myRole }) {
+function GameRoom({ roomCode, userId, myTeam, myRole, connectedUsers, roles }) {
     const [currentRole, setCurrentRole] = useState(0);
     const [game, setGame] = useState(new Chess());
     const [legalFigures, setLegalFigures] = useState(["p", "n"]);
@@ -144,10 +144,57 @@ function GameRoom({ roomCode, userId, myTeam, myRole }) {
     
     return (
         <div id="game-room-section" className="text-center">
-            <div>
-                <Chessboard position={game.fen()} onPieceDrop={onDrop} boardOrientation={myRole < 2 ? "white" : "black"} />
+            <div className="row">
+                <div className="col-3">
+                    <p>Team 1</p>
+                    {currentRole === 0 ? (
+                        <div className="rounded text-success">
+                            Brain: {connectedUsers[roles["brain_1"]].nickname} {myRole === 0 && <>(You)</>} <br />
+                        </div>
+                    ) : (
+                        <div className="rounded text-danger">
+                            Brain: {connectedUsers[roles["brain_1"]].nickname} {myRole === 0 && <>(You)</>} <br />
+                        </div>
+                    )}
+                    {currentRole === 1 ? (
+                        <div className="rounded text-success">
+                            Hand: {connectedUsers[roles["hand_1"]].nickname} {myRole === 1 && <>(You)</>} <br />
+                        </div>
+                    ) : (
+                        <div className="rounded text-danger">
+                            Hand: {connectedUsers[roles["hand_1"]].nickname} {myRole === 1 && <>(You)</>} <br />
+                        </div>
+                    )}
+                </div>
+                    <div className="col-6">
+                        <div className="container-fluid text-center">
+                            <center>
+                                <Chessboard position={game.fen()} onPieceDrop={onDrop} boardOrientation={myRole < 2 ? "white" : "black"}/>
+                            </center>
+                        </div>
+                    </div>
+                <div className="col-3">
+                    <p>Team 2</p>
+                    {currentRole === 2 ? (
+                        <div className="rounded text-success">
+                            Brain: {connectedUsers[roles["brain_2"]].nickname} {myRole === 2 && <>(You)</>} <br />
+                        </div>
+                    ) : (
+                        <div className="rounded text-danger">
+                            Brain: {connectedUsers[roles["brain_2"]].nickname} {myRole === 2 && <>(You)</>} <br />
+                        </div>
+                    )}
+                    {currentRole === 3 ? (
+                        <div className="rounded text-success">
+                            Hand: {connectedUsers[roles["hand_2"]].nickname} {myRole === 3 && <>(You)</>} <br />
+                        </div>
+                    ) : (
+                        <div className="rounded text-danger">
+                            Hand: {connectedUsers[roles["hand_2"]].nickname} {myRole === 3 && <>(You)</>} <br />
+                        </div>
+                    )}
+                </div>
             </div>
-            
             <br />
             
             <div className="container">

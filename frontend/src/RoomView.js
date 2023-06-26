@@ -180,6 +180,8 @@ function RoomView({ roomCode, nickname }) {
                         myTeam={connectedUsers[userId].team}
                         myRole={userId == roles["brain_1"] ? 0 : userId == roles["hand_1"]
                                 ? 1 : userId == roles["brain_2"] ? 2 : 3}
+                        connectedUsers={connectedUsers}
+                        roles={roles}
                     />
                 )}
             </div>
